@@ -1,0 +1,1222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>*,*::before,*::after{box-sizing:border-box}:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>TAVR CT 101</title>
+<meta name="description" content="Interactive, hands-on CT basics for structural heart APPs: scroll a real, publicly released CTA from neck to femoral bifurcation with organ labels, practise MPR on a 0.5 mm aortic root, and learn cardiac CT and TAVR access sizing.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* Layout: reading-room workstation. Black image panes framed by cool, quiet chrome; amber = measurement / current selection, cyan = reference geometry. */
+:root{
+  --bg:#EDF1F4; --surface:#FFFFFF; --sunk:#E3E9EE; --ink:#13202A; --muted:#566573; --line:#D2DAE1;
+  --accent:#AD620A; --accent-soft:#F5E6D1; --cyan:#0D6F80; --cyan-soft:#D6EDF1;
+  --good:#2A754A; --good-soft:#DCEFE3; --bad:#B0281E; --bad-soft:#F7DEDB; --warn:#9A6A00; --warn-soft:#F6ECCD;
+  --screen:#030506; --screen-ink:#D9E1E6; --screen-dim:#7E8A93;
+  --f-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0B1115; --surface:#121B21; --sunk:#0E161B; --ink:#E2E9ED; --muted:#93A1AC; --line:#233039;
+  --accent:#F0A43A; --accent-soft:#3A2A13; --cyan:#55C3D3; --cyan-soft:#12313A;
+  --good:#63C48E; --good-soft:#143023; --bad:#F2766D; --bad-soft:#3A1916; --warn:#E8C25A; --warn-soft:#352C10;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0B1115; --surface:#121B21; --sunk:#0E161B; --ink:#E2E9ED; --muted:#93A1AC; --line:#233039;
+  --accent:#F0A43A; --accent-soft:#3A2A13; --cyan:#55C3D3; --cyan-soft:#12313A;
+  --good:#63C48E; --good-soft:#143023; --bad:#F2766D; --bad-soft:#3A1916; --warn:#E8C25A; --warn-soft:#352C10;
+  color-scheme:dark}
+html,body{background:var(--bg);color:var(--ink)}
+body{font-family:var(--f-body);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:1220px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);font-weight:700;letter-spacing:-.01em;text-wrap:balance;margin:0}
+p{margin:0}
+a{color:var(--cyan)}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+
+/* header */
+.masthead{padding-block:22px 14px}
+.masthead .eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.masthead h1{font-size:clamp(28px,4.2vw,42px);line-height:1.05;margin-top:6px}
+.masthead h1 span{color:var(--accent)}
+.masthead p.lede{max-width:68ch;color:var(--muted);margin-top:8px}
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--surface);border-bottom:1px solid var(--line)}
+.tabs .wrap{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.tabs .wrap::-webkit-scrollbar{display:none}
+.tabs a{flex:none;display:block;padding:12px 14px 11px;text-decoration:none;color:var(--muted);font-weight:500;border-bottom:2px solid transparent;white-space:nowrap}
+.tabs a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tabs a:hover{color:var(--ink)}
+main{padding-block:20px 40px}
+.view{display:grid;gap:22px}
+.view[hidden]{display:none}
+.sec-head{display:grid;gap:6px;max-width:72ch}
+.sec-head h2{font-size:clamp(22px,2.6vw,28px)}
+.sec-head p{color:var(--muted)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:grid;gap:14px;min-width:0;align-content:start}
+.panel h3{font-size:19px}
+.panel .sub{color:var(--muted);max-width:70ch}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:22px}
+.label{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* controls */
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--sunk)}
+.seg button{border:0;background:transparent;padding:7px 11px;cursor:pointer;font-size:13.5px;color:var(--muted);border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:inset 0 -2px 0 var(--accent)}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 12px;cursor:pointer;font-size:13.5px}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--surface);font-weight:600}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 10px;font-size:12.5px;font-weight:500;border:1px solid transparent}
+.chip.good{background:var(--good-soft);color:var(--good)}
+.chip.bad{background:var(--bad-soft);color:var(--bad)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.neutral{background:var(--sunk);color:var(--muted)}
+.range{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center}
+.range label{font-size:13px;color:var(--muted);min-width:82px}
+.range output{font-family:var(--f-mono);font-size:13px;min-width:64px;text-align:right;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--accent);min-width:0}
+input[type=number],select{border:1px solid var(--line);background:var(--sunk);border-radius:7px;padding:6px 8px;width:100%;min-width:0}
+.chk{display:inline-flex;gap:6px;align-items:center;font-size:13.5px;color:var(--muted);cursor:pointer}
+.chk input{accent-color:var(--accent)}
+
+/* scan tab */
+.scan-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,380px);gap:22px;align-items:start}
+@media (max-width:900px){.scan-grid{grid-template-columns:1fr}}
+.viewer{display:grid;gap:10px;min-width:0}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.toolbar .spacer{flex:1}
+.zoomgrp{display:inline-flex;align-items:center;gap:0}
+.zoomgrp span{font-family:var(--f-mono);font-size:12.5px;padding:0 8px;color:var(--muted);min-width:46px;text-align:center}
+.screen{position:relative;background:var(--screen);border-radius:var(--r);aspect-ratio:1/1;max-width:100%;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+.screen canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.screen[data-tool="measure"] canvas{cursor:crosshair}
+.screen[data-tool="window"] canvas{cursor:ns-resize}
+.screen[data-tool="pan"] canvas{cursor:grab}
+.screen[data-tool="probe"] canvas{cursor:cell}
+.ov{position:absolute;font-family:var(--f-mono);font-size:11.5px;line-height:1.45;color:var(--screen-dim);pointer-events:none;white-space:pre}
+.ov b{color:var(--screen-ink);font-weight:500}
+.ov.tl{top:10px;left:12px}.ov.tr{top:10px;right:12px;text-align:right}
+.ov.bl{bottom:10px;left:12px}.ov.br{bottom:10px;right:12px;text-align:right}
+.ori{position:absolute;font-family:var(--f-mono);font-size:12px;color:#E2B04F;pointer-events:none;font-weight:500}
+.ori.t{top:8px;left:50%;transform:translateX(-50%)}.ori.b{bottom:8px;left:50%;transform:translateX(-50%)}
+.ori.l{left:8px;top:50%;transform:translateY(-50%)}.ori.r{right:8px;top:50%;transform:translateY(-50%)}
+@media (max-width:520px){.ov{font-size:10px}.ov.tr,.ov.br{display:none}}
+.loading{position:absolute;inset:0;display:grid;place-items:center;background:rgba(3,5,6,.72);color:var(--screen-ink);font-family:var(--f-mono);font-size:13px;text-align:center;pointer-events:none}
+.loading[hidden]{display:none}
+.loading>div{display:grid;gap:8px;justify-items:center;padding:16px}
+.loading small{color:var(--screen-dim)}
+.lbar{width:220px;max-width:70vw;height:4px;background:#1b2328;border-radius:2px;overflow:hidden}
+.lbar i{display:block;height:100%;width:0;background:#F0A43A}
+.zrow{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center}
+.zrow label{font-size:13px;color:var(--muted)}
+.zrow output{font-family:var(--f-mono);font-size:13px;min-width:92px;text-align:right}
+.readout{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;min-height:44px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);font-size:14px}
+.readout .val{font-family:var(--f-mono);font-variant-numeric:tabular-nums;color:var(--accent);font-weight:500}
+.readout .hint{color:var(--muted)}
+.winrow{display:grid;gap:8px}
+.presets{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.presets .label{margin-right:4px}
+.wl2{display:grid;grid-template-columns:1fr 1fr;gap:6px 18px}
+@media (max-width:560px){.wl2{grid-template-columns:1fr}}
+#winMap{width:100%;height:78px;display:block}
+.side{display:grid;gap:14px;min-width:0}
+.stopcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 16px 14px;display:grid;gap:10px}
+.stopcard .num{font-family:var(--f-mono);font-size:12px;color:var(--accent);letter-spacing:.06em}
+.stopcard h3{font-size:20px;line-height:1.2}
+.stopcard dl{margin:0;display:grid;gap:9px}
+.stopcard dt{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.stopcard dd{margin:2px 0 0;font-size:14.5px}
+.stopcard .try{background:var(--accent-soft);border-radius:8px;padding:10px 12px;font-size:14px}
+.stopcard .try b{font-weight:600}
+.stopcard .nav{display:flex;gap:8px;justify-content:space-between}
+.stopnav{display:grid;grid-template-columns:96px minmax(0,1fr);gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px}
+.scoutbox{display:grid;gap:6px;align-content:start}
+#scout{width:96px;aspect-ratio:255/517;height:auto;background:var(--screen);border-radius:6px;display:block;cursor:pointer;touch-action:none}
+.scoutbox .label{font-size:10px;text-align:center}
+#stopList{list-style:none;margin:0;padding:0;display:grid;gap:1px;max-height:470px;overflow:auto}
+#stopList button{width:100%;text-align:left;display:grid;grid-template-columns:26px 1fr;gap:6px;align-items:baseline;border:0;background:transparent;padding:6px 6px;border-radius:6px;cursor:pointer;font-size:13.5px;line-height:1.3;color:var(--ink)}
+#stopList button .n{font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
+#stopList button:hover{background:var(--sunk)}
+#stopList button[aria-current="true"]{background:var(--accent-soft)}
+#stopList button[aria-current="true"] .n{color:var(--accent)}
+
+
+/* MPR lab */
+.mpr-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,360px);gap:22px;align-items:start}
+@media (max-width:980px){.mpr-grid{grid-template-columns:1fr}}
+.panes{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--screen);padding:6px;border-radius:var(--r);touch-action:none;user-select:none;-webkit-user-select:none}
+@media (max-width:640px){.panes{grid-template-columns:1fr}}
+.pane{position:relative;aspect-ratio:1/1;border-radius:6px;overflow:hidden;box-shadow:inset 0 0 0 1.5px var(--pc);min-width:0}
+.pane canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.panes .loading{border-radius:var(--r)}
+ol.steps{margin:0;padding-left:20px;display:grid;gap:7px;font-size:14.5px}
+ol.steps li::marker{color:var(--accent);font-family:var(--f-mono);font-size:12.5px}
+.caserow{display:grid;gap:6px}
+.casenote{margin:0;font-size:13.5px;color:var(--muted);max-width:80ch}
+.casenote b{color:var(--ink);font-weight:600}
+.exbtns{display:flex;flex-wrap:wrap;gap:8px}
+#exList{list-style:none;margin:0;padding:0;display:grid;gap:1px}
+#exList button{width:100%;text-align:left;display:grid;grid-template-columns:26px 1fr;gap:6px;align-items:baseline;border:0;background:transparent;padding:6px;border-radius:6px;cursor:pointer;font-size:13.5px;line-height:1.3;color:var(--ink)}
+#exList button .n{font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
+#exList button:hover{background:var(--sunk)}
+#exList button[aria-current="true"]{background:var(--accent-soft)}
+#exList button[aria-current="true"] .n{color:var(--accent)}
+
+/* basics */
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:10px}
+.sw{display:grid;gap:4px}
+.sw i{display:block;aspect-ratio:1.4/1;border-radius:6px;border:1px solid var(--line)}
+.sw b{font-size:12.5px;font-weight:500;line-height:1.25}
+.sw span{font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
+.sw.clipL i{outline:2px solid var(--cyan);outline-offset:-2px}
+.sw.clipH i{outline:2px solid var(--accent);outline-offset:-2px}
+.formula{font-family:var(--f-mono);font-size:14px;background:var(--sunk);border-radius:8px;padding:10px 12px;overflow-x:auto}
+.lab{display:grid;grid-template-columns:minmax(0,260px) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:640px){.lab{grid-template-columns:1fr}}
+#bloomCv{width:100%;max-width:260px;aspect-ratio:1;background:var(--screen);border-radius:8px;display:block}
+#bloomProf{width:100%;height:120px;display:block}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+.stat{border:1px solid var(--line);border-radius:8px;padding:9px 11px;display:grid;gap:2px}
+.stat .k{font-size:12px;color:var(--muted)}
+.stat .v{font-family:var(--f-mono);font-size:19px;font-variant-numeric:tabular-nums}
+.stat .v small{font-size:12px;color:var(--muted)}
+ul.tight{margin:0;padding-left:18px;display:grid;gap:6px}
+ul.tight li::marker{color:var(--muted)}
+.ori-fig{width:100%;max-width:360px;height:auto;display:block}
+
+/* cardiac */
+#gateCv{width:100%;height:250px;display:block}
+.dob{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:10px}
+.dob figure{margin:0;display:grid;gap:6px}
+.dob canvas{width:100%;aspect-ratio:1;background:var(--sunk);border-radius:8px;display:block}
+.dob figcaption{font-size:12.5px;color:var(--muted)}
+.hinges{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.ann{display:grid;grid-template-columns:minmax(0,260px) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:640px){.ann{grid-template-columns:1fr}}
+#annSvg{width:100%;max-width:260px;height:auto;display:block}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.field{display:grid;gap:4px}
+.field label{font-size:12.5px;color:var(--muted)}
+
+/* access */
+.sides{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:14px}
+.side-card{border:1px solid var(--line);border-radius:8px;padding:12px;display:grid;gap:8px;justify-items:start}
+.side-card svg{width:150px;height:150px}
+.checks{display:grid;gap:8px}
+.refs{font-size:13px;color:var(--muted)}
+.refs a{color:var(--cyan)}
+
+/* quiz */
+.q{border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:10px;background:var(--surface)}
+.q h3{font-family:var(--f-body);font-size:16px;font-weight:600;letter-spacing:0}
+.q .n{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.opts{display:grid;gap:6px}
+.opts button{text-align:left;border:1px solid var(--line);background:var(--sunk);border-radius:8px;padding:9px 12px;cursor:pointer;font-size:14.5px}
+.opts button:hover:not([disabled]){border-color:var(--muted)}
+.opts button.right{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+.opts button.wrong{background:var(--bad-soft);border-color:var(--bad);color:var(--ink)}
+.opts button[disabled]{cursor:default}
+.expl{font-size:14px;color:var(--muted)}
+.score{font-family:var(--f-mono)}
+
+footer{border-top:1px solid var(--line);padding-block:20px 28px;color:var(--muted);font-size:13.5px}
+footer .wrap{display:grid;gap:6px}
+footer a{color:var(--ink)}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:8px;font-size:14px;z-index:20;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+@media (prefers-reduced-motion:no-preference){.tabs a{transition:color .15s,border-color .15s}}
+</style>
+</head>
+<body>
+
+<header class="masthead"><div class="wrap">
+  <div class="eyebrow">Hands-on CT basics · structural heart APPs</div>
+  <h1>TAVR CT <span>101</span></h1>
+  <p class="lede">Scroll a real, publicly released CT angiogram from the neck to the femoral bifurcation in axial, coronal and sagittal planes. Change the window, probe Hounsfield units, measure vessels, then learn how the cardiac part of a TAVR scan is acquired and measured.</p>
+</div></header>
+
+<nav class="tabs" aria-label="Sections"><div class="wrap">
+  <a href="#scan">Scroll the scan</a>
+  <a href="#mpr">MPR lab</a>
+  <a href="#basics">How CT works</a>
+  <a href="#cardiac">Cardiac CT</a>
+  <a href="#access">Access check</a>
+  <a href="#quiz">Quiz</a>
+</div></nav>
+
+<main class="wrap">
+
+<!-- ============ SCAN ============ -->
+<section class="view" id="view-scan" data-view="scan">
+  <div class="scan-grid">
+    <div class="viewer">
+      <div class="toolbar" role="toolbar" aria-label="Viewer tools">
+        <div class="seg" id="toolSeg">
+          <button type="button" data-tool="probe" aria-pressed="true">Probe HU</button>
+          <button type="button" data-tool="measure" aria-pressed="false">Measure</button>
+          <button type="button" data-tool="window" aria-pressed="false">Window</button>
+          <button type="button" data-tool="pan" aria-pressed="false">Pan</button>
+        </div>
+        <div class="seg zoomgrp">
+          <button type="button" id="zoomOut" aria-label="Zoom out">−</button>
+          <span id="zoomLbl">1.0×</span>
+          <button type="button" id="zoomIn" aria-label="Zoom in">+</button>
+        </div>
+        <button type="button" class="btn" id="viewReset">Reset view</button>
+        <div class="seg" id="viewSeg" aria-label="Plane">
+          <button type="button" data-v="ax" aria-pressed="true">Axial</button>
+          <button type="button" data-v="co" aria-pressed="false">Coronal</button>
+          <button type="button" data-v="sa" aria-pressed="false">Sagittal</button>
+        </div>
+        <span class="spacer"></span>
+        <label class="chk"><input type="checkbox" id="nmToggle" checked> Organ names</label>
+        <label class="chk"><input type="checkbox" id="lblToggle"> Color labels</label>
+        <label class="chk"><input type="checkbox" id="hlToggle" checked> Outline</label>
+      </div>
+      <div class="screen" id="screen" data-tool="probe">
+        <canvas id="cv" tabindex="0" aria-label="CT image. Mouse wheel or arrow keys change the slice."></canvas>
+        <div class="ov tl" id="ovTL"></div>
+        <div class="ov tr" id="ovTR"></div>
+        <div class="ov bl" id="ovBL"></div>
+        <div class="ov br" id="ovBR"></div>
+        <div class="ori t">A</div><div class="ori b">P</div><div class="ori l">R</div><div class="ori r">L</div>
+        <div class="loading" id="loading"><div><span id="loadMsg">Loading CT volume · 0 %</span><div class="lbar"><i id="loadBar"></i></div><small>About 26 MB, loaded once per visit</small></div></div>
+      </div>
+      <div class="zrow">
+        <label for="zSlider" id="zLbl">Table position</label>
+        <input type="range" id="zSlider" min="0" max="516" step="1" value="157">
+        <output id="zOut" class="mono"></output>
+      </div>
+      <div class="readout" id="readout" aria-live="polite"></div>
+      <div class="winrow">
+        <div class="presets" id="presets"><span class="label">Window</span></div>
+        <div class="wl2">
+          <div class="range"><label for="wlS">Level (L)</label><input type="range" id="wlS" min="-1000" max="1500" step="5"><output id="wlO"></output></div>
+          <div class="range"><label for="wwS">Width (W)</label><input type="range" id="wwS" min="1" max="3000" step="5"><output id="wwO"></output></div>
+        </div>
+        <canvas id="winMap" aria-label="Window map: how Hounsfield units map to gray levels"></canvas>
+      </div>
+    </div>
+    <aside class="side">
+      <article class="stopcard" id="stopCard" aria-live="polite"></article>
+      <div class="stopnav">
+        <div class="scoutbox">
+          <canvas id="scout" aria-label="Scout (localizer). Click to jump to a level."></canvas>
+          <div class="label">Scout</div>
+        </div>
+        <ol id="stopList" aria-label="Teaching stops, head to feet"></ol>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ============ MPR LAB ============ -->
+<section class="view" id="view-mpr" data-view="mpr" hidden>
+  <div class="sec-head">
+    <h2>MPR lab</h2>
+    <p>Three linked planes through the same CT. Move the crosshair, rotate the planes and build a double-oblique view the way structural imagers do on a planning workstation. Start with the root reconstruction: it is this patient's real root at 0.5 mm, and every answer is exact.</p>
+  </div>
+  <div class="mpr-grid">
+    <div class="viewer">
+      <div class="caserow">
+        <div class="presets"><span class="label">Case</span>
+          <div class="seg" id="mCase">
+            <button type="button" data-case="root" aria-pressed="true">Root reconstruction · 0.5 mm</button>
+            <button type="button" data-case="cta" aria-pressed="false">Body CTA · 1.5 mm</button>
+          </div>
+        </div>
+        <p class="casenote" id="caseNote"></p>
+      </div>
+      <div class="toolbar" role="toolbar" aria-label="MPR tools">
+        <div class="seg" id="mTools">
+          <button type="button" data-tool="nav" aria-pressed="true">Navigate</button>
+          <button type="button" data-tool="measure" aria-pressed="false">Measure</button>
+          <button type="button" data-tool="window" aria-pressed="false">Window</button>
+          <button type="button" data-tool="pan" aria-pressed="false">Pan</button>
+        </div>
+        <div class="seg zoomgrp">
+          <button type="button" id="mZoomOut" aria-label="Zoom out">−</button>
+          <span id="mZoomLbl">2.0×</span>
+          <button type="button" id="mZoomIn" aria-label="Zoom in">+</button>
+        </div>
+        <button type="button" class="btn" id="mReset">Square up planes</button>
+        <span class="spacer"></span>
+        <label class="chk"><input type="checkbox" id="mLbl"> Color labels</label>
+      </div>
+      <div class="panes">
+        <div class="pane" style="--pc:#F0A43A"><canvas id="mprA" tabindex="0" aria-label="Axial plane"></canvas></div>
+        <div class="pane" style="--pc:#5CC48A"><canvas id="mprB" tabindex="0" aria-label="Coronal plane"></canvas></div>
+        <div class="pane" style="--pc:#55C3D3"><canvas id="mprC" tabindex="0" aria-label="Sagittal plane"></canvas></div>
+        <div class="pane" style="--pc:#26323b"><canvas id="mprArm" aria-label="C-arm angles that show the axial plane edge-on"></canvas></div>
+        <div class="loading" id="mprLoading"><div><span id="mprLoadMsg">Loading the root reconstruction</span><small>Opens as soon as the selected case has loaded</small></div></div>
+      </div>
+      <div class="readout" id="mReadout" aria-live="polite"></div>
+      <div class="presets" id="mPresets"><span class="label">Window</span></div>
+      <div class="range"><label for="mSlab">Slab MIP</label><input type="range" id="mSlab" min="0" max="30" step="1" value="0"><output id="mSlabO">Off</output></div>
+    </div>
+    <aside class="side">
+      <article class="stopcard" id="exCard"></article>
+      <div class="stopnav" style="grid-template-columns:1fr"><ol id="exList" class="stoplist" aria-label="Exercises"></ol></div>
+    </aside>
+  </div>
+</section>
+
+<!-- ============ BASICS ============ -->
+<section class="view" id="view-basics" data-view="basics" hidden>
+  <div class="sec-head">
+    <h2>How CT works, in four ideas</h2>
+    <p>Each pixel is a number. The window decides which numbers you can see. Blur makes small things lie. Orientation is fixed by convention.</p>
+  </div>
+  <div class="grid2">
+    <div class="panel">
+      <div class="label">1 · Hounsfield units</div>
+      <h3>Every voxel is an attenuation number</h3>
+      <p class="sub">The scanner measures how much each small block of tissue (a voxel) attenuates the X-ray beam and scales it against water and air.</p>
+      <div class="formula">HU = 1000 × (μ<sub>tissue</sub> − μ<sub>water</sub>) / (μ<sub>water</sub> − μ<sub>air</sub>)<br>water = 0 · air = −1000</div>
+      <p class="sub">Iodinated contrast raises blood from about 40 HU to 300–450 HU on a well-timed CTA. Calcium usually reads far higher, which is why calcium and contrast can still be told apart when the window is chosen well.</p>
+    </div>
+    <div class="panel">
+      <div class="label">2 · Windowing</div>
+      <h3>A screen shows ~256 grays; CT holds ~4000 numbers</h3>
+      <p class="sub">The window picks a slice of the HU range to spread across the grays. Below L − W/2 is pure black (cyan outline), above L + W/2 is pure white (amber outline).</p>
+      <div class="presets" id="bPresets"></div>
+      <div class="range"><label for="bWl">Level (L)</label><input type="range" id="bWl" min="-1000" max="1500" step="5" value="40"><output id="bWlO"></output></div>
+      <div class="range"><label for="bWw">Width (W)</label><input type="range" id="bWw" min="1" max="3000" step="5" value="400"><output id="bWwO"></output></div>
+      <div class="swatches" id="swatches"></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="label">3 · Blur and blooming</div>
+    <h3>Why calcified iliacs look smaller than they are</h3>
+    <p class="sub">Every CT image is slightly blurred by slice thickness and reconstruction kernel. Around bright calcium, the blur spills into the lumen. With a narrow window that spill saturates to white and the lumen looks narrower. This synthetic vessel has a true lumen of 6.0 mm with calcium on both sides.</p>
+    <div class="lab">
+      <canvas id="bloomCv" aria-label="Cross-section of a calcified artery"></canvas>
+      <div style="display:grid;gap:12px;min-width:0">
+        <div class="range"><label for="bSig">Image blur</label><input type="range" id="bSig" min="0.15" max="1.2" step="0.05" value="0.6"><output id="bSigO"></output></div>
+        <div class="presets"><span class="label">Window</span>
+          <div class="seg" id="bloomWin">
+            <button type="button" data-w="vasc" aria-pressed="true">Vascular L200 W700</button>
+            <button type="button" data-w="wide" aria-pressed="false">Wide L500 W1600</button>
+          </div>
+        </div>
+        <div class="stats">
+          <div class="stat"><span class="k">True lumen</span><span class="v">6.0 <small>mm</small></span></div>
+          <div class="stat"><span class="k">Apparent lumen</span><span class="v" id="bApp">–</span></div>
+          <div class="stat"><span class="k">Error</span><span class="v" id="bErr">–</span></div>
+        </div>
+        <canvas id="bloomProf" aria-label="HU profile across the vessel"></canvas>
+        <p class="sub" style="font-size:13.5px">The profile shows HU across the vessel. The amber line is the HU where the edge appears on screen with this window; cyan dashes mark the true lumen. Practical rule: measure calcified vessels in a wide window with a raised level, on thin slices.</p>
+      </div>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="panel">
+      <div class="label">4 · Orientation</div>
+      <h3>You are standing at the patient's feet</h3>
+      <svg class="ori-fig" viewBox="0 0 360 170" role="img" aria-label="Axial orientation: viewer looks up from the feet; patient right appears on image left">
+        <rect x="8" y="8" width="160" height="154" rx="8" fill="var(--screen)"/>
+        <ellipse cx="88" cy="88" rx="62" ry="44" fill="#5d666d"/>
+        <ellipse cx="88" cy="112" rx="11" ry="9" fill="#d9dee2"/>
+        <circle cx="74" cy="78" r="9" fill="#e7ecef"/>
+        <text x="88" y="24" text-anchor="middle" fill="#E2B04F" font-family="IBM Plex Mono, monospace" font-size="12">A</text>
+        <text x="88" y="156" text-anchor="middle" fill="#E2B04F" font-family="IBM Plex Mono, monospace" font-size="12">P</text>
+        <text x="16" y="92" fill="#E2B04F" font-family="IBM Plex Mono, monospace" font-size="12">R</text>
+        <text x="152" y="92" fill="#E2B04F" font-family="IBM Plex Mono, monospace" font-size="12">L</text>
+        <text x="186" y="44" fill="var(--ink)" font-family="IBM Plex Sans, sans-serif" font-size="13">Image left = patient right</text>
+        <text x="186" y="66" fill="var(--ink)" font-family="IBM Plex Sans, sans-serif" font-size="13">Top = anterior</text>
+        <text x="186" y="96" fill="var(--muted)" font-family="IBM Plex Sans, sans-serif" font-size="12">Liver sits on image left;</text>
+        <text x="186" y="114" fill="var(--muted)" font-family="IBM Plex Sans, sans-serif" font-size="12">descending aorta on image</text>
+        <text x="186" y="132" fill="var(--muted)" font-family="IBM Plex Sans, sans-serif" font-size="12">right, beside the spine.</text>
+      </svg>
+      <ul class="tight">
+        <li><b>Axial</b> slices stack head to feet. <b>Coronal</b> and <b>sagittal</b> images are rebuilt from the same voxels (multiplanar reformation, MPR).</li>
+        <li>A <b>double-oblique</b> plane is tilted in two directions to sit exactly across a structure, such as the aortic annulus.</li>
+        <li><b>MIP</b> shows the brightest voxel along each ray (good for vessels, exaggerates calcium). <b>Volume rendering</b> is a 3D picture, not a measuring tool.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <div class="label">The TAVR planning protocol</div>
+      <h3>One contrast bolus, root to groin</h3>
+      <ul class="tight">
+        <li><b>ECG-gated</b> scan of the aortic root and heart, reconstructed in several phases so the annulus can be measured in systole.</li>
+        <li><b>CTA of chest, abdomen and pelvis</b> down past the femoral heads to show the whole access path. Usually from the same bolus.</li>
+        <li>Contrast is timed with <b>bolus tracking</b>: the scan starts when a monitoring ROI in the aorta crosses a set HU threshold.</li>
+        <li><b>Arms raised</b> above the head to reduce streak artifact across the chest.</li>
+        <li><b>Thin slices</b> (about 0.5–1 mm) so oblique reformats stay sharp.</li>
+        <li>Rate control with beta-blockers is generally used cautiously or avoided in severe aortic stenosis, unlike routine coronary CTA.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CARDIAC ============ -->
+<section class="view" id="view-cardiac" data-view="cardiac" hidden>
+  <div class="sec-head">
+    <h2>Cardiac CT for valve planning</h2>
+    <p>Three skills: choose the phase, find the annular plane, and turn the annulus outline into numbers.</p>
+  </div>
+  <div class="panel">
+    <div class="label">1 · ECG gating</div>
+    <h3>Pick the moment in the cardiac cycle</h3>
+    <p class="sub">Gating ties each image to a percentage of the R–R interval. The annulus is usually a few percent larger in systole (around 30–40% R–R), so it is measured there. Raise the heart rate and watch the quiet part of diastole disappear.</p>
+    <div class="fields" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr))">
+      <div class="range"><label for="gHr">Heart rate</label><input type="range" id="gHr" min="45" max="115" step="1" value="68"><output id="gHrO"></output></div>
+      <div class="range"><label for="gPh">Phase</label><input type="range" id="gPh" min="0" max="95" step="1" value="35"><output id="gPhO"></output></div>
+      <div class="presets"><span class="label">Gating</span>
+        <div class="seg" id="gMode">
+          <button type="button" data-m="retro" aria-pressed="true">Retrospective</button>
+          <button type="button" data-m="pro" aria-pressed="false">Prospective</button>
+        </div>
+      </div>
+    </div>
+    <canvas id="gateCv" aria-label="ECG with gating window"></canvas>
+    <div class="stats" id="gStats"></div>
+    <p class="sub" style="font-size:13.5px">Retrospective gating keeps the tube on through the whole cycle, so any phase can be reconstructed later (useful for picking the systolic annulus and for leaflet cine). Dose modulation drops the tube current outside the chosen window. Prospective triggering only exposes a window, which saves dose but limits which phases exist. Exposure numbers are illustrative.</p>
+  </div>
+
+  <div class="panel">
+    <div class="label">2 · Double oblique</div>
+    <h3>Find the annular plane: line up three hinge points</h3>
+    <p class="sub">The annulus is a virtual ring through the lowest attachment points (hinge points or nadirs) of the three cusps. It is tilted relative to the body, so an axial slice cuts it at an angle. Tilt the plane in the coronal and sagittal views, and move it up or down, until all three hinge points sit on it.</p>
+    <div class="fields" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr))">
+      <div class="range"><label for="dA">Coronal tilt</label><input type="range" id="dA" min="-30" max="30" step="0.5" value="0"><output id="dAO"></output></div>
+      <div class="range"><label for="dB">Sagittal tilt</label><input type="range" id="dB" min="-30" max="30" step="0.5" value="0"><output id="dBO"></output></div>
+      <div class="range"><label for="dH">Plane height</label><input type="range" id="dH" min="-6" max="18" step="0.25" value="2"><output id="dHO"></output></div>
+    </div>
+    <div class="dob">
+      <figure><canvas id="dobCor"></canvas><figcaption>Coronal view (patient right on left)</figcaption></figure>
+      <figure><canvas id="dobSag"></canvas><figcaption>Sagittal view (anterior on left)</figcaption></figure>
+      <figure><canvas id="dobEn"></canvas><figcaption>En face: the view down your plane</figcaption></figure>
+    </div>
+    <div class="hinges" id="dobRead"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button type="button" class="btn" id="dobNew">New case</button>
+      <button type="button" class="btn" id="dobShow">Show answer</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="label">3 · Annulus numbers</div>
+    <h3>From an elliptical outline to sizing inputs</h3>
+    <p class="sub">The annulus is usually an ellipse, not a circle. Trace it in systole and the software reports area and perimeter, then converts each into an "equivalent" circular diameter. Balloon-expandable valves are commonly sized by area and self-expanding valves by perimeter; always use the manufacturer's sizing chart.</p>
+    <div class="ann">
+      <svg id="annSvg" viewBox="0 0 260 260" role="img" aria-label="Annulus ellipse with area- and perimeter-derived circles"></svg>
+      <div style="display:grid;gap:12px;min-width:0">
+        <div class="range"><label for="aMaj">Max diameter</label><input type="range" id="aMaj" min="18" max="34" step="0.1" value="27.0"><output id="aMajO"></output></div>
+        <div class="range"><label for="aMin">Min diameter</label><input type="range" id="aMin" min="15" max="32" step="0.1" value="21.4"><output id="aMinO"></output></div>
+        <div class="stats" id="aStats"></div>
+        <p class="sub" style="font-size:13.5px">Perimeter-derived diameter is always at least the area-derived one, and the gap widens as the annulus gets more elliptical. Calcium, especially in the LVOT, and bicuspid anatomy change how these numbers should be used.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="label">4 · Root checks</div>
+    <h3>Coronary obstruction screen</h3>
+    <p class="sub">Coronary height is measured from the annular plane to the lower edge of each coronary ostium, perpendicular to the plane. Risk of coronary obstruction is commonly flagged with heights under about 10–12 mm, especially when the sinuses of Valsalva are narrow (under about 30 mm), and in valve-in-valve cases.</p>
+    <div class="fields">
+      <div class="field"><label for="rLm">Left main height (mm)</label><input type="number" id="rLm" step="0.1" value="13.4"></div>
+      <div class="field"><label for="rRca">RCA height (mm)</label><input type="number" id="rRca" step="0.1" value="9.6"></div>
+      <div class="field"><label for="rSov">Mean sinus of Valsalva Ø (mm)</label><input type="number" id="rSov" step="0.1" value="29.2"></div>
+    </div>
+    <div class="hinges" id="rOut"></div>
+  </div>
+</section>
+
+<!-- ============ ACCESS ============ -->
+<section class="view" id="view-access" data-view="access" hidden>
+  <div class="sec-head">
+    <h2>Will the sheath fit?</h2>
+    <p>Compare the sheath's outer diameter with the smallest lumen on each side. Measurements you take in the viewer can be sent here.</p>
+  </div>
+  <div class="panel">
+    <div class="label">Sheath-to-femoral artery ratio (SFAR)</div>
+    <div class="fields">
+      <div class="field"><label for="shVal">Sheath outer diameter</label><input type="number" id="shVal" step="0.1" value="18"></div>
+      <div class="field"><label for="shUnit">Unit</label><select id="shUnit"><option value="fr" selected>French (Fr)</option><option value="mm">mm</option></select></div>
+      <div class="field"><label for="mldR">Right minimal lumen Ø (mm)</label><input type="number" id="mldR" step="0.1" value="6.5"></div>
+      <div class="field"><label for="mldL">Left minimal lumen Ø (mm)</label><input type="number" id="mldL" step="0.1" value="7.5"></div>
+    </div>
+    <p class="sub" style="font-size:13.5px"><span class="mono" id="frNote"></span> Sheath labels often state the inner diameter; use the outer diameter from the manufacturer, and the largest expanded size for expandable sheaths. The defaults are examples; measure the scan in the viewer and send your values here.</p>
+    <div class="sides" id="sfarOut"></div>
+  </div>
+  <div class="grid2">
+    <div class="panel">
+      <div class="label">Modifiers</div>
+      <h3>The ratio is only the start</h3>
+      <p class="sub">Calcium and tortuosity stop a vessel from stretching around a sheath. Tick what applies to the side you are favoring.</p>
+      <div class="checks" id="mods"></div>
+      <div id="modOut"></div>
+    </div>
+    <div class="panel">
+      <div class="label">How to measure</div>
+      <h3>Reading the iliofemoral path</h3>
+      <ul class="tight">
+        <li>Follow each side on a centerline from the aortic bifurcation to below the femoral bifurcation. Record the <b>minimal luminal diameter</b>, measured perpendicular to the vessel, inner wall to inner wall.</li>
+        <li>Grade <b>calcium</b> by its arc (circumferential or horseshoe is worst) and note where it sits.</li>
+        <li>Judge <b>tortuosity</b> on a 3D view; flexible, non-calcified tortuous vessels often straighten, calcified ones do not.</li>
+        <li>Mark the <b>puncture zone</b>: common femoral artery over the femoral head, above the bifurcation, anterior wall free of calcium.</li>
+        <li>If neither side works, assess <b>alternative access</b>: subclavian/axillary, transcarotid, transcaval.</li>
+      </ul>
+      <p class="refs">Further reading: <a href="https://pubmed.ncbi.nlm.nih.gov/?term=Hayashida+2011+transfemoral+aortic+valve+implantation+sheath+femoral+artery+ratio" target="_blank" rel="noopener">Hayashida et al., SFAR and vascular complications (2011)</a> · <a href="https://pubmed.ncbi.nlm.nih.gov/?term=Blanke+2019+SCCT+expert+consensus+computed+tomography+TAVI+TAVR" target="_blank" rel="noopener">SCCT expert consensus on CT for TAVI/TAVR (2019)</a> · <a href="https://pubmed.ncbi.nlm.nih.gov/?term=Ribeiro+2013+predictive+factors+coronary+obstruction+transcatheter+aortic+valve" target="_blank" rel="noopener">Ribeiro et al., coronary obstruction (2013)</a></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section class="view" id="view-quiz" data-view="quiz" hidden>
+  <div class="sec-head">
+    <h2>Check yourself</h2>
+    <p>Eight questions drawn from the other sections. <span class="score" id="qScore"></span></p>
+  </div>
+  <div style="display:grid;gap:12px" id="quiz"></div>
+  <div><button type="button" class="btn" id="qReset">Start over</button></div>
+</section>
+
+</main>
+
+<footer><div class="wrap">
+  <p>Created by <a href="https://www.linkedin.com/in/ken-chan-6774411a5/" target="_blank" rel="noopener">Ken Chan</a>, ACNPC-AG, CCK, RCIS, AACC. Built with the help of AI (Claude, Anthropic).</p>
+  <p>Companion to <a href="https://lubdubappguide.com/" target="_blank" rel="noopener">LubDubAPP Guide</a>. Not for clinical decision-making; size devices from the manufacturer's instructions for use. Open access for non-commercial education.</p>
+  <p>CT data: case ct1349 from the <a href="https://zenodo.org/records/16274177" target="_blank" rel="noopener">TAVRP-PL dataset</a> (CC BY 4.0), derived from the <a href="https://zenodo.org/records/6802613" target="_blank" rel="noopener">TotalSegmentator dataset</a> (Wasserthal et al., CC BY 4.0). Cropped, re-oriented and compressed for the web; outlines are the dataset's automatically generated labels and are approximate. Organ names come from automatic segmentation with <a href="https://github.com/wasserth/TotalSegmentator" target="_blank" rel="noopener">TotalSegmentator</a> (Wasserthal et al., <i>Radiology: Artificial Intelligence</i> 2023) and may be imperfect at organ edges.</p>
+</div></footer>
+<div class="toast" id="toast" hidden></div>
+
+
+
+<script>
+(function(){
+'use strict';
+const $=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s));
+const tok=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const fmt=(v,d=1)=>Number(v).toFixed(d);
+function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>{t.hidden=true;},2200);}
+function prep(c,cssH){const dpr=Math.min(window.devicePixelRatio||1,2.5);const W=c.clientWidth||300;const H=cssH||c.clientHeight||W;if(c.width!==Math.round(W*dpr)||c.height!==Math.round(H*dpr)){c.width=Math.round(W*dpr);c.height=Math.round(H*dpr);}const ctx=c.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);return{ctx,W,H,dpr};}
+
+/* ======================= VIEWER (real CT volume) ======================= */
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const SH=[517,252,255],VS=1.5,PLANE=SH[1]*SH[2];
+const CHUNKS=[[0,64,2607429],[64,128,3491389],[128,192,3932538],[192,256,3732231],[256,320,3550421],[320,384,3134873],[384,448,3051581],[448,512,2983138],[512,517,217621]].map((c,i)=>({file:`data/ct_${String(i).padStart(2,'0')}.png`,z0:c[0],z1:c[1],bytes:c[2]}));
+const LABELS={1:{n:'Aorta',s:'Aorta',c:[235,90,80]},2:{n:'Aortic root',s:'Root',c:[245,165,60]},3:{n:'Aortic valve',s:'Valve',c:[250,225,80],hide:1},4:{n:'Left ventricle',s:'LV',c:[230,120,180]},5:{n:'Aortic annulus',s:'Annulus',c:[80,210,230],hide:1},6:{n:'Left iliac artery',s:'L iliac a',c:[100,210,130]},7:{n:'Right iliac artery',s:'R iliac a',c:[110,150,245]},20:{n:"Right lung",s:"R lung",c:[110, 170, 230]},21:{n:"Left lung",s:"L lung",c:[110, 170, 230]},22:{n:"Heart",s:"Heart",c:[230, 120, 150]},23:{n:"Trachea",s:"Trachea",c:[150, 200, 220]},24:{n:"Esophagus",s:"Esophagus",c:[230, 170, 120]},25:{n:"Thyroid gland",s:"Thyroid",c:[240, 140, 90]},26:{n:"Liver",s:"Liver",c:[180, 110, 70]},27:{n:"Gallbladder",s:"Gallbladder",c:[120, 190, 90]},28:{n:"Spleen",s:"Spleen",c:[170, 100, 200]},29:{n:"Stomach",s:"Stomach",c:[230, 190, 110]},30:{n:"Pancreas",s:"Pancreas",c:[240, 210, 120]},31:{n:"Right kidney",s:"R kidney",c:[230, 150, 80]},32:{n:"Left kidney",s:"L kidney",c:[230, 150, 80]},33:{n:"Adrenal gland",s:"Adrenal",c:[240, 200, 60],hide:1},34:{n:"Small bowel",s:"Small bowel",c:[220, 200, 140]},35:{n:"Duodenum",s:"Duodenum",c:[220, 200, 140]},36:{n:"Colon",s:"Colon",c:[200, 170, 120]},37:{n:"Urinary bladder",s:"Bladder",c:[240, 230, 120]},38:{n:"Prostate",s:"Prostate",c:[210, 150, 170]},39:{n:"Spinal cord",s:"Cord",c:[250, 240, 180]},40:{n:"Superior vena cava",s:"SVC",c:[80, 120, 230]},41:{n:"Inferior vena cava",s:"IVC",c:[80, 120, 230]},42:{n:"Brachiocephalic (innominate) artery",s:"Innominate",c:[220, 70, 70]},43:{n:"Right subclavian artery",s:"R subclavian",c:[220, 70, 70]},44:{n:"Left subclavian artery",s:"L subclavian",c:[220, 70, 70]},45:{n:"Right common carotid artery",s:"R carotid",c:[220, 70, 70]},46:{n:"Left common carotid artery",s:"L carotid",c:[220, 70, 70]},47:{n:"Brachiocephalic vein",s:"BCV",c:[80, 120, 230],hide:1},48:{n:"Pulmonary vein",s:"Pulm vein",c:[80, 120, 230],hide:1},49:{n:"Left atrial appendage",s:"LAA",c:[230, 120, 150]},50:{n:"Portal / splenic vein",s:"Portal v",c:[80, 120, 230],hide:1},51:{n:"Right common/external iliac vein",s:"R iliac v",c:[80, 120, 230],hide:1},52:{n:"Left common/external iliac vein",s:"L iliac v",c:[80, 120, 230],hide:1},53:{n:"Sternum",s:"Sternum",c:[235, 225, 200]},54:{n:"Rib",s:"Rib",c:[235, 225, 200],hide:1},55:{n:"Costal cartilage",s:"Cartilage",c:[220, 215, 190],hide:1},56:{n:"Clavicle",s:"Clavicle",c:[235, 225, 200]},57:{n:"Scapula",s:"Scapula",c:[235, 225, 200]},58:{n:"Humerus",s:"Humerus",c:[235, 225, 200]},59:{n:"Hip bone (ilium)",s:"Ilium",c:[235, 225, 200]},60:{n:"Femur",s:"Femur",c:[235, 225, 200]},61:{n:"Sacrum",s:"Sacrum",c:[235, 225, 200]},62:{n:"Gluteal muscles",s:"Gluteal",c:[200, 120, 110]},63:{n:"Paraspinal (erector spinae) muscle",s:"Paraspinal",c:[200, 120, 110]},64:{n:"Iliopsoas muscle",s:"Psoas",c:[200, 120, 110]},65:{n:"Skull",s:"Skull",c:[235, 225, 200],hide:1},66:{n:"Pulmonary artery",s:"Pulm artery",c:[140,120,230]},70:{n:"C1 vertebra",s:"C1",c:[235, 225, 200]},71:{n:"C2 vertebra",s:"C2",c:[235, 225, 200]},72:{n:"C3 vertebra",s:"C3",c:[235, 225, 200]},73:{n:"C4 vertebra",s:"C4",c:[235, 225, 200]},74:{n:"C5 vertebra",s:"C5",c:[235, 225, 200]},75:{n:"C6 vertebra",s:"C6",c:[235, 225, 200]},76:{n:"C7 vertebra",s:"C7",c:[235, 225, 200]},77:{n:"T1 vertebra",s:"T1",c:[235, 225, 200]},78:{n:"T2 vertebra",s:"T2",c:[235, 225, 200]},79:{n:"T3 vertebra",s:"T3",c:[235, 225, 200]},80:{n:"T4 vertebra",s:"T4",c:[235, 225, 200]},81:{n:"T5 vertebra",s:"T5",c:[235, 225, 200]},82:{n:"T6 vertebra",s:"T6",c:[235, 225, 200]},83:{n:"T7 vertebra",s:"T7",c:[235, 225, 200]},84:{n:"T8 vertebra",s:"T8",c:[235, 225, 200]},85:{n:"T9 vertebra",s:"T9",c:[235, 225, 200]},86:{n:"T10 vertebra",s:"T10",c:[235, 225, 200]},87:{n:"T11 vertebra",s:"T11",c:[235, 225, 200]},88:{n:"T12 vertebra",s:"T12",c:[235, 225, 200]},89:{n:"L1 vertebra",s:"L1",c:[235, 225, 200]},90:{n:"L2 vertebra",s:"L2",c:[235, 225, 200]},91:{n:"L3 vertebra",s:"L3",c:[235, 225, 200]},92:{n:"L4 vertebra",s:"L4",c:[235, 225, 200]},93:{n:"L5 vertebra",s:"L5",c:[235, 225, 200]}};
+const PRESETS={soft:{n:'Soft tissue',l:40,w:400},vasc:{n:'Vascular',l:200,w:700},wide:{n:'Wide / calcium',l:500,w:1600},lung:{n:'Lung',l:-600,w:1500}};
+const VIEWNAME={ax:'Axial',co:'Coronal',sa:'Sagittal'};
+const STOPS=[
+{z:58,t:'Neck: carotid arteries and thyroid',wp:'vasc',hl:[],
+ look:'Find the air-filled trachea in the midline. The thyroid wraps around its front and sides and enhances brightly because it concentrates iodine. The common carotid arteries are the round, bright vessels just beside the thyroid, each with the internal jugular vein on its outer side.',
+ why:'The planning scan should start high enough to include the carotids. Transcarotid access needs a common carotid without significant disease and of adequate size, and carotid disease matters when you discuss stroke risk.'},
+{z:82,t:'Thoracic inlet: subclavians and streak artifact',wp:'vasc',hl:[],
+ look:"The brightest, streaky white on the image's right side (the patient's left) is undiluted contrast in the left subclavian and brachiocephalic veins. Contrast went in through the left arm. The bright bands radiating from it are streak artifact.",
+ why:'Subclavian or axillary access is a common alternative route, so these arteries are part of the read. Streaks from dense venous contrast can hide the arch branches; many centers inject the right arm for this reason, because the left brachiocephalic vein crosses in front of the arch vessels.',
+ tryit:'Switch the window to Wide / calcium. The streaks shrink and the vessels underneath become easier to separate.'},
+{z:92,t:'Arch branch vessels',wp:'vasc',hl:[],
+ look:"In front of the trachea, a row of round arteries: from the patient's right to left (image left to right), the innominate (brachiocephalic) trunk, the left common carotid and the left subclavian.",
+ why:'Cerebral embolic protection filters sit in the innominate and left common carotid, so their size and any disease at the origins matter.'},
+{z:106,t:'Aortic arch',wp:'vasc',hl:[1],
+ look:'The arch runs as an oblong tube from front-right to back-left, beside the trachea. The colored outline is an auto-generated aorta label.',
+ why:'Look for calcium and protruding atheroma. A heavily calcified ("porcelain") ascending aorta raises surgical risk and is one reason a patient is referred for TAVR.'},
+{z:140,t:'Pulmonary artery level',wp:'vasc',hl:[1,66],
+ look:'Ascending aorta in front and to the right of center, descending aorta beside the spine on the left, and the main pulmonary artery dividing into right and left branches.',
+ why:"The ascending aorta is measured near this level, perpendicular to the vessel's long axis. An axial slice that cuts the aorta obliquely overstates its diameter, which is why reformatted planes are used."},
+{z:157,t:'Aortic root and valve',wp:'vasc',hl:[2,3,5],
+ look:'Calcium in the valve region is the brightest white, brighter than the contrast in the root. The outlines mark the auto-generated root, valve and annulus labels.',
+ why:'This axial plane cuts the root obliquely, so the annulus and root are measured on double-oblique reconstructions (see Cardiac CT). On axial slices you judge how much calcium there is, where it sits, and where the coronary arteries arise.',
+ tryit:'Switch to Coronal, then Sagittal, and scroll to the root. You will see how tilted the root is relative to the axial plane.'},
+{z:176,t:'Ventricles and LV outflow',wp:'soft',hl:[4],
+ look:'The bright left ventricle with its muscular wall, the right ventricle in front, and the atria behind. The outline marks the LV label.',
+ why:'The planning scan also shows LV thrombus, a bulky basal septum (which affects valve depth and outflow obstruction after implant), and pericardial effusion.'},
+{z:205,t:'Diaphragm level',wp:'soft',hl:[1],
+ look:'Liver on the image left (patient right), stomach on the image right, and the descending aorta just in front of the spine.',
+ why:'Tortuosity of the descending and thoracoabdominal aorta adds friction and can make valve delivery harder.'},
+{z:254,t:'Celiac and SMA',wp:'soft',hl:[1],
+ look:'The celiac trunk and superior mesenteric artery leave the front of the aorta. Scroll a few slices up and down to watch them branch.',
+ why:'Not part of access sizing, but every TAVR CTA covers the abdomen. Read it fully: aneurysms, masses and other incidental findings can change candidacy or timing.'},
+{z:268,t:'Renal arteries',wp:'soft',hl:[1],
+ look:'Both kidneys show a bright cortex and darker medulla, typical of arterial phase. The renal arteries run sideways from the aorta; the right one passes behind the inferior vena cava.',
+ why:'Many TAVR patients have CKD, so protocols aim to cover root to groin with a single contrast bolus.'},
+{z:320,t:'Infrarenal aorta',wp:'vasc',hl:[1],
+ look:'The aorta sits just in front of the spine, slightly to the left. Check its wall for calcium and its diameter for aneurysm.',
+ why:'Note aneurysm (generally 30 mm or more), mural thrombus and circumferential calcium. Each affects passage of a large-bore delivery system.'},
+{z:364,t:'Common iliac arteries',wp:'vasc',hl:[6,7],
+ look:'Just below the aortic bifurcation, two common iliac arteries run down and outward in front of the spine. The outlines mark the auto-generated iliac labels.',
+ why:'Follow both sides continuously from the bifurcation to the groin and note the smallest lumen, the calcium, and every turn.'},
+{z:420,t:'External iliac arteries',wp:'vasc',hl:[6,7],view:{zoom:2,x:0,y:-10},
+ look:'The external iliacs run along the pelvic side walls, in front of and beside the bladder.',
+ why:'The minimal luminal diameter along the iliofemoral path, together with calcium and tortuosity, decides whether the sheath fits.',
+ tryit:'Choose Measure and drag across each external iliac lumen, inner wall to inner wall, then send the values to Access check. At 1.5 mm voxels a 6 mm vessel is only four pixels wide, so expect about ±1 mm of uncertainty.'},
+{z:455,t:'Common femoral artery at the femoral head',wp:'vasc',hl:[6,7],view:{zoom:1.8,x:0,y:-15},
+ look:'Each common femoral artery lies in front of the femoral head, with the femoral vein on its inner (medial) side.',
+ why:'The usual puncture target is the common femoral artery over the femoral head, above the bifurcation, with an anterior wall free of calcium. Puncture too high (above the inguinal ligament) risks retroperitoneal bleeding.'},
+{z:490,t:'Femoral bifurcation',wp:'vasc',hl:[],view:{zoom:1.8,x:0,y:-15},
+ look:'Each common femoral has divided into the superficial femoral artery in front and the profunda femoris behind and to the outside.',
+ why:'A high bifurcation shortens the safe puncture zone. Puncturing the SFA or profunda raises the risk of bleeding, pseudoaneurysm and occlusion.'}
+];
+
+const VOL=new Int16Array(SH[0]*PLANE);VOL.fill(-1024);
+let LAB=new Uint8Array(SH[0]*PLANE);
+const ZOK=new Uint8Array(SH[0]);let zLoaded=0,loadErr=null;
+const st={view:'ax',idx:{ax:157,co:120,sa:127},wl:200,ww:700,zoom:1,panX:0,panY:0,tool:'probe',labels:false,names:true,hlOn:true,hl:[],stop:5,measures:[],drag:null,probe:null,lastMeasure:null};
+const cv=$('#cv'),ctx=cv.getContext('2d');
+const off=document.createElement('canvas'),octx=off.getContext('2d');
+let curImg=null;
+
+async function loadChunk(c,onProg){const r=await fetch(c.file);if(!r.ok)throw new Error(`${c.file}: HTTP ${r.status}`);
+ let blob;if(r.body&&r.body.getReader){const rd=r.body.getReader(),parts=[];let got=0;for(;;){const{done,value}=await rd.read();if(done)break;parts.push(value);got+=value.length;onProg(Math.min(got,c.bytes));}blob=new Blob(parts,{type:'image/png'});}else{blob=await r.blob();onProg(c.bytes);}
+ const bmp=await createImageBitmap(blob,{colorSpaceConversion:'none',premultiplyAlpha:'none'});
+ const cn=document.createElement('canvas');cn.width=bmp.width;cn.height=bmp.height;const cx=cn.getContext('2d',{willReadFrequently:true,colorSpace:'srgb'});cx.drawImage(bmp,0,0);
+ const d=cx.getImageData(0,0,bmp.width,bmp.height).data,n=(c.z1-c.z0)*PLANE,base=c.z0*PLANE;
+ for(let k=0,p=0;k<n;k++,p+=4){VOL[base+k]=((d[p]<<8)|d[p+1])-1024;LAB[base+k]=d[p+2];}
+ for(let z=c.z0;z<c.z1;z++)ZOK[z]=1;zLoaded+=c.z1-c.z0;}
+async function loadVolume(){
+ const total=CHUNKS.reduce((a,c)=>a+c.bytes,0),got=CHUNKS.map(()=>0);
+ const prog=()=>{const p=got.reduce((a,b)=>a+b,0)/total;$('#loadMsg').textContent=`Loading CT volume · ${Math.round(p*100)} %`;$('#loadBar').style.width=(p*100).toFixed(1)+'%';const mm=$('#mprLoadMsg');if(mm)mm.textContent=`Loading CT volume · ${Math.round(p*100)} %`;};
+ const z0=st.idx.ax,order=CHUNKS.map((c,i)=>i).sort((a,b)=>Math.abs((CHUNKS[a].z0+CHUNKS[a].z1)/2-z0)-Math.abs((CHUNKS[b].z0+CHUNKS[b].z1)/2-z0));
+ let next=0;const worker=async()=>{while(next<order.length){const i=order[next++];await loadChunk(CHUNKS[i],g=>{got[i]=g;prog();});req('img');}};
+ try{await Promise.all([worker(),worker(),worker()]);computeScout();$('#loading').hidden=true;readout();mprReady('cta');}
+ catch(e){loadErr=e;$('#loadMsg').textContent='Could not load the CT data ('+e.message+'). Reload the page to try again.';$('#loadBar').style.width='0';}
+}
+
+function dims(v){return v==='ax'?{w:SH[2],h:SH[1],n:SH[0]}:v==='co'?{w:SH[2],h:SH[0],n:SH[1]}:{w:SH[1],h:SH[0],n:SH[2]};}
+function vox(v,i,j,k){return v==='ax'?k*PLANE+j*SH[2]+i:v==='co'?j*PLANE+k*SH[2]+i:j*PLANE+i*SH[2]+k;}
+function zOf(v,i,j,k){return v==='ax'?k:j;}
+function buildImage(){
+ const v=st.view,{w,h}=dims(v),k=st.idx[v];if(off.width!==w||off.height!==h){off.width=w;off.height=h;}
+ const img=octx.createImageData(w,h),d=img.data,lo=st.wl-st.ww/2,sc=255/st.ww,hl=st.hlOn?new Set(st.hl):new Set(),fill=st.labels;
+ for(let j=0;j<h;j++){for(let i=0;i<w;i++){const p=(j*w+i)*4,vi=vox(v,i,j,k);let g;
+   if(!ZOK[zOf(v,i,j,k)]){d[p]=d[p+1]=d[p+2]=12;d[p+3]=255;continue;}
+   g=(VOL[vi]-lo)*sc;g=g<0?0:g>255?255:g;let r=g,gg=g,b=g;const L=LAB[vi];
+   if(L&&fill&&LABELS[L]){const c=LABELS[L].c;r=r*.6+c[0]*.4;gg=gg*.6+c[1]*.4;b=b*.6+c[2]*.4;}
+   if(L&&hl.has(L)){const nb=[i>0?vox(v,i-1,j,k):-1,i<w-1?vox(v,i+1,j,k):-1,j>0?vox(v,i,j-1,k):-1,j<h-1?vox(v,i,j+1,k):-1];if(nb.some(q=>q<0||LAB[q]!==L)){r=255;gg=190;b=80;}}
+   d[p]=r;d[p+1]=gg;d[p+2]=b;d[p+3]=255;}}
+ octx.putImageData(img,0,0);curImg={v,k,w,h,names:nameAnchors(v,k,w,h)};
+}
+const NM={lab:null,dist:null,par:null};
+function nameAnchors(v,k,w,h){
+ const n=w*h;if(!NM.lab||NM.lab.length!==n){NM.lab=new Uint8Array(n);NM.dist=new Uint16Array(n);}
+ const L=NM.lab,D=NM.dist;
+ for(let j=0;j<h;j++)for(let i=0;i<w;i++){const q=j*w+i;L[q]=ZOK[zOf(v,i,j,k)]?LAB[vox(v,i,j,k)]:0;}
+ const BIG=60000;for(let q=0;q<n;q++)D[q]=L[q]?BIG:0;
+ for(let j=0;j<h;j++)for(let i=0;i<w;i++){const q=j*w+i,l=L[q];if(!l)continue;let m=D[q];
+  if(i===0||j===0||i===w-1||j===h-1){D[q]=0;continue;}
+  const a=L[q-1]===l?D[q-1]+3:0,b=L[q-w]===l?D[q-w]+3:0,c=L[q-w-1]===l?D[q-w-1]+4:0,d=L[q-w+1]===l?D[q-w+1]+4:0;m=Math.min(m,a,b,c,d);D[q]=m;}
+ for(let j=h-1;j>=0;j--)for(let i=w-1;i>=0;i--){const q=j*w+i,l=L[q];if(!l)continue;let m=D[q];
+  if(i===0||j===0||i===w-1||j===h-1)continue;
+  const a=L[q+1]===l?D[q+1]+3:0,b=L[q+w]===l?D[q+w]+3:0,c=L[q+w+1]===l?D[q+w+1]+4:0,d=L[q+w-1]===l?D[q+w-1]+4:0;m=Math.min(m,a,b,c,d);D[q]=m;}
+ // connected components (4-neighbour, union-find); the deepest point of each label's two largest-interior pieces gets a name
+ if(!NM.par||NM.par.length!==n)NM.par=new Int32Array(n);const P=NM.par;
+ const find=x=>{while(P[x]!==x){P[x]=P[P[x]];x=P[x];}return x;};
+ for(let q=0;q<n;q++){P[q]=q;const l=L[q];if(!l)continue;const i=q%w;
+  if(i>0&&L[q-1]===l){const r1=find(q-1),r2=find(q);if(r1!==r2)P[r2]=r1;}
+  if(q>=w&&L[q-w]===l){const r1=find(q-w),r2=find(q);if(r1!==r2)P[r2]=r1;}}
+ const comp=new Map();for(let q=0;q<n;q++){const l=L[q];if(!l||D[q]<7)continue;const r=find(q),c=comp.get(r);if(!c||D[q]>c.d)comp.set(r,{l,d:D[q],q});}
+ const byL=new Map();for(const c of comp.values()){if(!LABELS[c.l]||LABELS[c.l].hide)continue;const a=byL.get(c.l)||[];a.push(c);byL.set(c.l,a);}
+ const res=[];for(const a of byL.values()){a.sort((x,y)=>y.d-x.d);res.push(a[0]);if(a[1]&&a[1].d>=Math.max(7,a[0].d*0.35))res.push(a[1]);}
+ return res.sort((a,b)=>b.d-a.d).map(b=>({l:b.l,d:b.d,x:b.q%w,y:Math.floor(b.q/w)}));
+}
+let raf=0,needImg=false;
+function req(kind){if(kind==='img'||kind==='gray'||kind==='slice')needImg=true;if(!raf)raf=requestAnimationFrame(()=>{raf=0;if(needImg){buildImage();needImg=false;}draw();});}
+function view(){const r=cv.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,2.5);const W=Math.round(r.width*dpr),H=Math.round(r.height*dpr);if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}const {w,h}=dims(st.view),Wm=w*VS,Hm=h*VS,k=Math.min(W/Wm,H/Hm)*st.zoom;return{W,H,dpr,k,Wm,Hm,ox:W/2-(Wm/2+st.panX)*k,oy:H/2-(Hm/2+st.panY)*k};}
+function toMM(e){const r=cv.getBoundingClientRect(),v=view();const sx=(e.clientX-r.left)*v.dpr,sy=(e.clientY-r.top)*v.dpr;return{x:(sx-v.ox)/v.k,y:(sy-v.oy)/v.k};}
+function draw(){
+ const v=view(),{W,H,k,ox,oy,dpr,Wm,Hm}=v;ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
+ if(!curImg){overlays();return;}
+ ctx.imageSmoothingEnabled=st.zoom<2.2;ctx.imageSmoothingQuality='high';ctx.drawImage(off,ox,oy,Wm*k,Hm*k);
+ const S=m=>({x:ox+m.x*k,y:oy+m.y*k});
+ if(st.view!=='ax'){const y=oy+(st.idx.ax+.5)*VS*k;ctx.strokeStyle='rgba(255,194,75,.55)';ctx.setLineDash([6*dpr,5*dpr]);ctx.lineWidth=1*dpr;ctx.beginPath();ctx.moveTo(ox,y);ctx.lineTo(ox+Wm*k,y);ctx.stroke();ctx.setLineDash([]);}
+ const drawM=m=>{const a=S({x:m.x1,y:m.y1}),b=S({x:m.x2,y:m.y2});ctx.strokeStyle='#FFC24B';ctx.lineWidth=1.6*dpr;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+  const ang=Math.atan2(b.y-a.y,b.x-a.x),nx=-Math.sin(ang)*5*dpr,ny=Math.cos(ang)*5*dpr;ctx.beginPath();ctx.moveTo(a.x-nx,a.y-ny);ctx.lineTo(a.x+nx,a.y+ny);ctx.moveTo(b.x-nx,b.y-ny);ctx.lineTo(b.x+nx,b.y+ny);ctx.stroke();
+  const t=fmt(Math.hypot(m.x2-m.x1,m.y2-m.y1))+' mm';ctx.font=`500 ${Math.round(12.5*dpr)}px "IBM Plex Mono", monospace`;ctx.textAlign='left';ctx.textBaseline='middle';const tx=b.x+8*dpr,ty=b.y-8*dpr;ctx.lineWidth=3*dpr;ctx.strokeStyle='rgba(0,0,0,.9)';ctx.strokeText(t,tx,ty);ctx.fillStyle='#FFC24B';ctx.fillText(t,tx,ty);};
+ if(st.names&&curImg.names){const fs=Math.round(11*dpr);ctx.font=`500 ${fs}px "IBM Plex Sans", system-ui, sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';const placed=[],hl=new Set(st.hlOn?st.hl:[]);
+  for(const a of curImg.names){const x=ox+(a.x+.5)*VS*k,y=oy+(a.y+.5)*VS*k;if(x<0||y<0||x>W||y>H)continue;const lb=LABELS[a.l],t=lb.s||lb.n,tw=ctx.measureText(t).width;
+   if(placed.some(p=>Math.abs(p.x-x)<(p.w+tw)/2+4*dpr&&Math.abs(p.y-y)<fs+2*dpr))continue;placed.push({x,y,w:tw});
+   ctx.lineWidth=3*dpr;ctx.strokeStyle='rgba(0,0,0,.82)';ctx.lineJoin='round';ctx.strokeText(t,x,y);ctx.fillStyle=hl.has(a.l)?'#FFC768':'#F2F6F8';ctx.fillText(t,x,y);}}
+ st.measures.forEach(m=>{if(m.view===st.view&&m.k===st.idx[st.view])drawM(m);});
+ if(st.drag&&st.drag.kind==='measure')drawM(st.drag.m);
+ if(st.probe&&st.tool==='probe'){const p=S(st.probe),r=1.5*VS*k+2*dpr;ctx.strokeStyle='rgba(255,194,75,.9)';ctx.lineWidth=1.2*dpr;ctx.strokeRect(p.x-r,p.y-r,2*r,2*r);}
+ overlays();
+}
+function overlays(){
+ const v=st.view,k=st.idx[v],n=dims(v).n;
+ $('#ovTL').innerHTML='<b>CT angiogram</b>  arterial phase\nPublic dataset · case ct1349';
+ $('#ovTR').innerHTML=`<b>${VIEWNAME[v]}</b>  ${k+1} / ${n}\n${v==='ax'?'z '+fmt(k*VS)+' mm from top':v==='co'?fmt(k*VS)+' mm from front':fmt(k*VS)+' mm from right'}`;
+ $('#ovBL').innerHTML=`W <b>${Math.round(st.ww)}</b>  L <b>${Math.round(st.wl)}</b>`;
+ $('#ovBR').innerHTML=`1.5 mm voxels · ${fmt(st.zoom)}×`;
+ $('#zoomLbl').textContent=fmt(st.zoom)+'×';
+ const ori=v==='ax'?['A','P','R','L']:v==='co'?['S','I','R','L']:['S','I','A','P'];['t','b','l','r'].forEach((c,i)=>{$('.ori.'+c).textContent=ori[i];});
+ $('#zLbl').textContent=v==='ax'?'Table position':v==='co'?'Coronal depth':'Sagittal position';
+ $('#zOut').textContent=v==='ax'?fmt(k*VS)+' mm':v==='co'?fmt(k*VS)+' mm':fmt(k*VS)+' mm';
+}
+function readout(){
+ const el=$('#readout');
+ if(st.tool==='measure'||st.lastMeasure){const m=st.lastMeasure;if(m){const len=Math.hypot(m.x2-m.x1,m.y2-m.y1);el.innerHTML=`<span>Length</span> <span class="val">${fmt(len)} mm</span><button type="button" class="btn" data-send="R">Use as right lumen</button><button type="button" class="btn" data-send="L">Use as left lumen</button><button type="button" class="btn" data-clear>Clear lines</button>`;return;}
+  el.innerHTML='<span class="hint">Drag across a vessel lumen, inner wall to inner wall. Zoom in first for small vessels. Lines stay on their own slice.</span>';return;}
+ if(st.tool==='window'){el.innerHTML='<span class="hint">Drag up or down to change the level, left or right to change the width.</span>';return;}
+ if(st.tool==='pan'){el.innerHTML='<span class="hint">Drag to move the image. Use + and − to zoom.</span>';return;}
+ if(!st.probe||!curImg){el.innerHTML='<span class="hint">Point at any structure to read its name and Hounsfield units (3 × 3 voxel ROI). Scroll with the mouse wheel, arrow keys, the slider, or the scout. To test yourself, turn off Organ names and point at a structure to check your answer.</span>';return;}
+ const v=st.view,{w,h}=dims(v),k=st.idx[v],i=Math.floor(st.probe.x/VS),j=Math.floor(st.probe.y/VS);
+ if(i<1||j<1||i>w-2||j>h-2){el.innerHTML='<span class="hint">Outside the image.</span>';return;}
+ let s=0;for(let dj=-1;dj<=1;dj++)for(let di=-1;di<=1;di++)s+=VOL[vox(v,i+di,j+dj,k)];const mean=s/9,L=LAB[vox(v,i,j,k)];
+ el.innerHTML=`<span class="val">${Math.round(mean)} HU</span> <span>${L&&LABELS[L]?LABELS[L].n+' <span class="hint">(auto label)</span>':hint(mean)}</span>`;
+}
+function hint(h){return h<-900?'<span class="hint">air</span>':h<-500?'<span class="hint">lung range</span>':h<-30?'<span class="hint">fat range</span>':h<100?'<span class="hint">soft tissue / unenhanced range</span>':h<550?'<span class="hint">contrast-enhanced blood range</span>':'<span class="hint">calcium / bone / metal range</span>';}
+$('#readout').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.hasAttribute('data-clear')){st.measures=[];st.lastMeasure=null;readout();req();return;}const side=b.getAttribute('data-send');if(side&&st.lastMeasure){const m=st.lastMeasure,len=Math.hypot(m.x2-m.x1,m.y2-m.y1);$(side==='R'?'#mldR':'#mldL').value=fmt(len);sfar();toast(`Sent ${fmt(len)} mm to Access check (${side==='R'?'right':'left'})`);}});
+
+function stopCard(){const i=st.stop,s=STOPS[i],c=$('#stopCard');
+ c.innerHTML=`<div class="num">STOP ${String(i+1).padStart(2,'0')} OF ${STOPS.length} · axial ${s.z+1}</div><h3>${s.t}</h3><dl><div><dt>Look for</dt><dd>${s.look}</dd></div><div><dt>Why it matters for TAVR</dt><dd>${s.why}</dd></div></dl>${s.tryit?`<div class="try"><b>Try it.</b> ${s.tryit}</div>`:''}<div class="nav"><button type="button" class="btn" id="prevStop" ${i===0?'disabled':''}>← Previous</button><button type="button" class="btn primary" id="nextStop" ${i===STOPS.length-1?'disabled':''}>Next stop →</button></div>`;
+ $('#prevStop').onclick=()=>goStop(i-1);$('#nextStop').onclick=()=>goStop(i+1);
+ $$('#stopList button').forEach((b,j)=>b.setAttribute('aria-current',j===i?'true':'false'));}
+function goStop(i){i=clamp(i,0,STOPS.length-1);const s=STOPS[i];st.stop=i;st.hl=s.hl;setView('ax',true);st.idx.ax=s.z;$('#zSlider').value=s.z;setWin(PRESETS[s.wp].l,PRESETS[s.wp].w);if(s.view){st.zoom=s.view.zoom;st.panX=s.view.x;st.panY=s.view.y;}else{st.zoom=1;st.panX=0;st.panY=0;}stopCard();req('img');drawScout();}
+$('#stopList').innerHTML=STOPS.map((s,i)=>`<li><button type="button"><span class="n">${String(i+1).padStart(2,'0')}</span><span>${s.t}</span></button></li>`).join('');
+$$('#stopList button').forEach((b,i)=>b.addEventListener('click',()=>goStop(i)));
+function setView(v,quiet){st.view=v;$$('#viewSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===v)));const n=dims(v).n;$('#zSlider').max=n-1;$('#zSlider').step=1;$('#zSlider').value=st.idx[v];if(!quiet){st.zoom=1;st.panX=0;st.panY=0;}st.probe=null;readout();req('img');}
+function setIdx(k){const v=st.view,n=dims(v).n;k=clamp(Math.round(k),0,n-1);if(k===st.idx[v])return;st.idx[v]=k;$('#zSlider').value=k;
+ if(v==='ax'){let best=-1,bd=1e9;STOPS.forEach((s,i)=>{const d=Math.abs(s.z-k);if(d<bd){bd=d;best=i;}});if(bd<=4&&best!==st.stop){st.stop=best;st.hl=STOPS[best].hl;stopCard();}drawScout();}
+ req('img');if(st.probe)setTimeout(readout,0);}
+function setWin(l,w){st.wl=clamp(l,-1000,1500);st.ww=clamp(w,1,3000);$('#wlS').value=st.wl;$('#wwS').value=st.ww;$('#wlO').textContent=Math.round(st.wl);$('#wwO').textContent=Math.round(st.ww);
+ $$('#presets button').forEach(b=>{const p=PRESETS[b.dataset.p];b.setAttribute('aria-pressed',String(p.l===st.wl&&p.w===st.ww));});req('img');drawWinMap();}
+$('#presets').insertAdjacentHTML('beforeend','<div class="seg">'+Object.entries(PRESETS).map(([k,p])=>`<button type="button" data-p="${k}" aria-pressed="false">${p.n}</button>`).join('')+'</div>');
+$$('#presets button').forEach(b=>b.addEventListener('click',()=>{const p=PRESETS[b.dataset.p];setWin(p.l,p.w);}));
+$('#wlS').addEventListener('input',e=>setWin(+e.target.value,st.ww));
+$('#wwS').addEventListener('input',e=>setWin(st.wl,+e.target.value));
+$('#zSlider').addEventListener('input',e=>setIdx(+e.target.value));
+$$('#viewSeg button').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.v)));
+$$('#toolSeg button').forEach(b=>b.addEventListener('click',()=>{st.tool=b.dataset.tool;$$('#toolSeg button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));$('#screen').dataset.tool=st.tool;if(st.tool!=='measure')st.lastMeasure=null;readout();req();}));
+$('#zoomIn').onclick=()=>{st.zoom=clamp(+(st.zoom*1.25).toFixed(2),1,8);req();};
+$('#zoomOut').onclick=()=>{st.zoom=clamp(+(st.zoom/1.25).toFixed(2),1,8);if(st.zoom===1){st.panX=0;st.panY=0;}req();};
+$('#viewReset').onclick=()=>{st.zoom=1;st.panX=0;st.panY=0;req();};
+$('#lblToggle').addEventListener('change',e=>{st.labels=e.target.checked;req('img');});
+$('#nmToggle').addEventListener('change',e=>{st.names=e.target.checked;req();});
+$('#hlToggle').addEventListener('change',e=>{st.hlOn=e.target.checked;req('img');});
+cv.addEventListener('wheel',e=>{e.preventDefault();setIdx(st.idx[st.view]+Math.sign(e.deltaY)*(e.shiftKey?5:1));},{passive:false});
+cv.addEventListener('keydown',e=>{const map={ArrowUp:-1,ArrowDown:1,PageUp:-10,PageDown:10};if(e.key in map){e.preventDefault();setIdx(st.idx[st.view]+map[e.key]);}});
+cv.addEventListener('pointerdown',e=>{cv.focus({preventScroll:true});const m=toMM(e);cv.setPointerCapture(e.pointerId);
+ if(st.tool==='measure')st.drag={kind:'measure',m:{view:st.view,k:st.idx[st.view],x1:m.x,y1:m.y,x2:m.x,y2:m.y}};
+ else if(st.tool==='window')st.drag={kind:'window',x:e.clientX,y:e.clientY,l:st.wl,w:st.ww};
+ else if(st.tool==='pan')st.drag={kind:'pan',x:e.clientX,y:e.clientY,px:st.panX,py:st.panY};
+ else{st.probe=m;readout();req();}});
+cv.addEventListener('pointermove',e=>{const d=st.drag;
+ if(!d){if(st.tool==='probe'&&e.pointerType==='mouse'){st.probe=toMM(e);readout();req();}return;}
+ if(d.kind==='measure'){const m=toMM(e);d.m.x2=m.x;d.m.y2=m.y;req();}
+ else if(d.kind==='window')setWin(d.l+(e.clientY-d.y)*2,d.w+(e.clientX-d.x)*4);
+ else if(d.kind==='pan'){const v=view();st.panX=d.px-(e.clientX-d.x)*v.dpr/v.k;st.panY=d.py-(e.clientY-d.y)*v.dpr/v.k;req();}});
+const endDrag=()=>{const d=st.drag;if(!d)return;if(d.kind==='measure'){const len=Math.hypot(d.m.x2-d.m.x1,d.m.y2-d.m.y1);if(len>.6){st.measures.push(d.m);st.lastMeasure=d.m;}readout();}st.drag=null;req();};
+cv.addEventListener('pointerup',endDrag);cv.addEventListener('pointercancel',endDrag);
+cv.addEventListener('pointerleave',()=>{if(st.tool==='probe'&&!st.drag){st.probe=null;readout();req();}});
+
+/* window map */
+function drawWinMap(){const c=$('#winMap');if(!c.clientWidth)return;const {ctx:x,W}=prep(c,78);const lo=-1000,hi=1600,m=10,X=h=>m+(h-lo)/(hi-lo)*(W-2*m);
+ const wlo=st.wl-st.ww/2,whi=st.wl+st.ww/2;
+ for(let px=m;px<W-m;px++){const h=lo+(px-m)/(W-2*m)*(hi-lo);const g=clamp((h-wlo)/st.ww,0,1)*255;x.fillStyle=`rgb(${g},${g},${g})`;x.fillRect(px,14,1.2,16);}
+ x.strokeStyle=tok('--line');x.strokeRect(m,14,W-2*m,16);
+ const a=X(clamp(wlo,lo,hi)),b=X(clamp(whi,lo,hi));x.strokeStyle=tok('--accent');x.lineWidth=2;x.beginPath();x.moveTo(a,10);x.lineTo(a,34);x.moveTo(b,10);x.lineTo(b,34);x.moveTo(a,10);x.lineTo(b,10);x.stroke();
+ x.font='500 10.5px "IBM Plex Mono", monospace';x.fillStyle=tok('--accent');x.textAlign='center';x.textBaseline='bottom';x.fillText(`W ${Math.round(st.ww)} · L ${Math.round(st.wl)}`,clamp((a+b)/2,60,W-60),9);
+ const tis=[['Air',-1000],['Lung',-860],['Fat',-95],['Water',0],['Muscle',50],['Contrast',380],['Calcium',950],['Bone',1300]];
+ x.textBaseline='top';x.fillStyle=tok('--muted');tis.forEach(([n,h],i)=>{const px=X(h),rw=i%3;x.strokeStyle=tok('--muted');x.beginPath();x.moveTo(px,32);x.lineTo(px,38+rw*12);x.stroke();x.textAlign=i===0?'left':i===tis.length-1?'right':'center';x.fillText(`${n} ${h}`,px,40+rw*12);});}
+
+/* scout: a projection computed from the loaded volume (sum of attenuation front to back) */
+const SC={canvas:null};
+function computeScout(){const [Z,Y,X]=SH,data=new Float32Array(Z*X);let mx=0;
+ for(let z=0;z<SH[0];z++){if(!ZOK[z])continue;const bz=z*PLANE;for(let y=0;y<Y;y++){const by=bz+y*X;for(let x=0;x<X;x++){const v=VOL[by+x]+1000;if(v>0)data[z*X+x]+=v;}}}
+ for(let i=0;i<data.length;i++)if(data[i]>mx)mx=data[i];
+ SC.canvas=SC.canvas||document.createElement('canvas');SC.canvas.width=X;SC.canvas.height=Z;const sctx=SC.canvas.getContext('2d'),id=sctx.createImageData(X,Z);
+ for(let i=0;i<data.length;i++){const g=mx?Math.pow(data[i]/mx,1.6)*255:0;id.data[i*4]=id.data[i*4+1]=id.data[i*4+2]=g;id.data[i*4+3]=255;}sctx.putImageData(id,0,0);drawScout();}
+function drawScout(){const c=$('#scout');if(!c.clientWidth)return;const {ctx:x,W,H}=prep(c,c.clientWidth*SH[0]/SH[2]);x.fillStyle='#000';x.fillRect(0,0,W,H);if(SC.canvas){x.imageSmoothingEnabled=true;x.drawImage(SC.canvas,0,0,W,H);}
+ x.strokeStyle='rgba(255,194,75,.45)';STOPS.forEach(s=>{const y=(s.z+.5)/SH[0]*H;x.beginPath();x.moveTo(0,y);x.lineTo(5,y);x.moveTo(W-5,y);x.lineTo(W,y);x.stroke();});
+ const y=(st.idx.ax+.5)/SH[0]*H;x.strokeStyle='#FFC24B';x.lineWidth=1.5;x.beginPath();x.moveTo(0,y);x.lineTo(W,y);x.stroke();}
+const scoutPick=e=>{const r=$('#scout').getBoundingClientRect(),z=clamp((e.clientY-r.top)/r.height,0,1)*(SH[0]-1);if(st.view==='ax')setIdx(z);else{st.idx.ax=Math.round(z);drawScout();req();}};
+$('#scout').addEventListener('pointerdown',e=>{$('#scout').setPointerCapture(e.pointerId);scoutPick(e);$('#scout')._d=true;});
+$('#scout').addEventListener('pointermove',e=>{if($('#scout')._d)scoutPick(e);});
+$('#scout').addEventListener('pointerup',()=>{$('#scout')._d=false;});
+
+/* ======================= MPR LAB ======================= */
+const V3={dot:(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],add:(a,b,s=1)=>[a[0]+b[0]*s,a[1]+b[1]*s,a[2]+b[2]*s],cross:(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],
+ norm:a=>{const l=Math.hypot(a[0],a[1],a[2])||1;return[a[0]/l,a[1]/l,a[2]/l];},
+ rot:(x,k,t)=>{const c=Math.cos(t),s=Math.sin(t),kx=V3.cross(k,x),kd=V3.dot(k,x)*(1-c);return[x[0]*c+kx[0]*s+k[0]*kd,x[1]*c+kx[1]*s+k[1]*kd,x[2]*c+kx[2]*s+k[2]*kd];}};
+const PC={A:'#F0A43A',B:'#5CC48A',C:'#55C3D3'},PNAME={A:'Axial',B:'Coronal',C:'Sagittal'},PNI={A:2,B:1,C:0},PORIG={A:[0,0,1],B:[0,1,0],C:[1,0,0]};
+const FOVB=260,deg=r=>r*180/Math.PI;
+/* Cases. "root" is a reconstruction of the real CTA's aortic root at 0.5 mm: real anatomy upsampled and sharpened, with cusps
+   fitted to this patient's own sinus walls and coronary ostia sharpened where the scan shows them. Its geometry is therefore known exactly.
+   "cta" is the real body CTA; its reference plane is fitted to the dataset's automatic annulus label (approximate). */
+const CASES={
+ root:{key:'root',name:'Root reconstruction · 0.5 mm',sh:[220,220,220],vs:.5,zoom:2.6,exact:true,
+  files:[[0,64,3489980],[64,128,3272332],[128,192,3228073],[192,220,1300582]].map((c,i)=>({file:`data/root_${String(i).padStart(2,'0')}.png`,z0:c[0],z1:c[1],bytes:c[2]})),
+  ref:{c:[59.54,55.68,58.97],n:V3.norm([0.8384,0.1341,0.5283])},
+  truth:{max:27.6,min:22.0,area:477,per:78.2,LM:9.9,RCA:17.1},
+  labels:{1:{n:'Aorta (auto label)',c:[235,90,80]},2:{n:'Aortic root (auto label)',c:[245,165,60]},3:{n:'Aortic valve cusp (modelled)',c:[250,225,80]},4:{n:'Left ventricle (auto label)',c:[230,120,180]},5:{n:'Aortic annulus (auto label)',c:[80,210,230]},8:{n:'Left main / LAD / LCx',c:[120,220,140]},9:{n:'Right coronary artery',c:[110,150,245]},10:{n:'Leaflet calcium (modelled)',c:[255,255,255]}},
+  vol:null,lab:null,ready:false},
+ cta:{key:'cta',name:'Body CTA · 1.5 mm',sh:SH,vs:VS,zoom:2,exact:false,
+  ref:{c:[207.0,142.3,255.6],n:V3.norm([0.838,0.134,0.528])},
+  vessel:{R:{n:'right external iliac',c:[140.1,196.0,631.1],d:V3.norm([-0.278,-0.664,0.694])},L:{n:'left external iliac',c:[252.3,176.4,630.9],d:V3.norm([0.281,-0.265,0.922])}},
+  labels:LABELS,vol:VOL,lab:null,ready:false}
+};
+const M={cs:CASES.root,c:CASES.root.ref.c.slice(),E:null,P:{},zoom:2.6,wl:250,ww:900,slab:0,labels:false,tool:'nav',drag:null,meas:[],last:null,probe:null,ex:0,checked:false,showRef:false,vessel:'R',ready:false,marks:{}};
+let MV=null,ML=null,MSH=[1,1,1],MVS=1,MPL=1;
+function useCase(cs){MV=cs.vol;ML=cs.lab;MSH=cs.sh;MVS=cs.vs;MPL=MSH[1]*MSH[2];}
+const EX_COMMON=[
+{t:'Find the annular plane',steps:[
+ 'Press <b>Start at the aortic root</b>. The crosshair sits in the root and the three planes are still orthogonal.',
+ 'In the <b>Coronal</b> pane, drag one of the round handles on the amber line (the axial plane) until the line runs across the root through the lowest attachment points of the cusps.',
+ 'Do the same in the <b>Sagittal</b> pane. Each tilt you make changes what the other panes show.',
+ 'Scroll in the <b>Axial</b> pane until the cusps just disappear. That level is the virtual basal ring, and the axial pane now shows the annulus en face.',
+ 'Press <b>Check my plane</b>. Feedback then updates live as you adjust.'],
+ btns:[['root','Start at the aortic root'],['check','Check my plane'],['auto','Show the answer plane']]},
+{t:'Measure the annulus',steps:[
+ 'Line up the annular plane first (exercise 1), or press <b>Show the answer plane</b>.',
+ 'Zoom in. Choose <b>Measure</b> and draw the longest diameter across the annulus in the Axial pane, inner edge to inner edge.',
+ 'Press <b>Use as annulus max</b> in the readout, then draw the shortest diameter at right angles and press <b>Use as annulus min</b>.',
+ 'Open <b>Cardiac CT</b> to see area, perimeter and the derived diameters.'],
+ btns:[['auto','Show the answer plane'],['zoomAnn','Zoom to the annulus']]},
+{t:'Read the C-arm angles',steps:[
+ 'Align the axial pane with the annulus (exercise 1).',
+ 'The chart plots every fluoroscopic angle that shows your axial plane edge-on: the perpendicularity curve.',
+ 'Any point on the curve gives a coplanar deployment view. Teams often pick a point near the patient\'s usual working views.',
+ 'Tilt the plane a few degrees and watch the curve move: small CT errors become different C-arm angles.'],
+ btns:[['auto','Show the answer plane'],['ref','Show / hide reference curve']]}];
+const EX_ROOT=EX_COMMON.concat([{t:'Measure coronary heights',steps:[
+ 'Press <b>Show the answer plane</b> so the axial pane sits on the annulus.',
+ 'Scroll the <b>Axial</b> pane toward the aorta (mouse wheel or arrow keys). The readout shows how far above the annulus you are.',
+ 'Stop at the first slice where the lower edge of the <b>left main</b> ostium opens off the left sinus and press <b>Mark left main</b>.',
+ 'Keep going for the <b>right coronary</b> ostium off the right (anterior) sinus and press <b>Mark RCA</b>. Heights under about 10–12 mm raise concern for obstruction, especially with bulky leaflets or a narrow sinus.'],
+ btns:[['auto','Show the answer plane'],['markLM','Mark left main'],['markRCA','Mark RCA'],['revealCor','Show the true heights']]}]);
+const EX_CTA=EX_COMMON.concat([{t:'Measure an iliac cross-section',steps:[
+ 'Press <b>Go to right external iliac</b> (or left). The axial pane cuts the vessel obliquely.',
+ 'In the Coronal and Sagittal panes, rotate the amber line until it crosses the vessel at a right angle.',
+ 'Measure the lumen in the Axial pane and send it to Access check.',
+ 'Compare with <b>Align to the vessel</b>. An oblique cut stretches the lumen along one axis by 1 / cos(angle).'],
+ btns:[['goR','Go to right external iliac'],['goL','Go to left external iliac'],['alignV','Align to the vessel']]}]);
+const EXS=()=>M.cs.key==='root'?EX_ROOT:EX_CTA;
+function frameFrom(e3){e3=V3.norm(e3);let e2=V3.add([0,1,0],e3,-e3[1]);if(Math.hypot(e2[0],e2[1],e2[2])<1e-3)e2=V3.add([0,0,1],e3,-e3[2]);e2=V3.norm(e2);const e1=V3.norm(V3.cross(e2,e3));return[e1,e2,e3];}
+function setFrame(E,c,zoom){M.E=E.map(v=>v.slice());if(c)M.c=c.slice();if(zoom)M.zoom=zoom;const[e1,e2,e3]=M.E;M.P={A:{u:e1.slice(),v:e2.slice()},B:{u:e1.slice(),v:e3.slice()},C:{u:e2.slice(),v:e3.slice()}};for(const k in M.P)M.P[k].vc=M.c.slice();mprReq(true);}
+const nOf=id=>M.E[PNI[id]];
+function reproj(){for(const id in M.P){const P=M.P[id],n=nOf(id);P.vc=V3.add(P.vc,n,V3.dot(V3.add(M.c,P.vc,-1),n));}}
+function orthoFix(){let[e1,,e3]=M.E;e3=V3.norm(e3);e1=V3.norm(V3.add(e1,e3,-V3.dot(e1,e3)));M.E=[e1,V3.cross(e3,e1),e3];
+ for(const id in M.P){const P=M.P[id],n=nOf(id);P.u=V3.norm(V3.add(P.u,n,-V3.dot(P.u,n)));let v=V3.add(P.v,n,-V3.dot(P.v,n));v=V3.add(v,P.u,-V3.dot(v,P.u));P.v=V3.norm(v);}}
+function rotatePane(id,dt){const P=M.P[id],k=V3.norm(V3.cross(P.u,P.v));M.E=M.E.map(e=>V3.rot(e,k,dt));
+ for(const q in M.P){if(q===id)continue;const Q=M.P[q];Q.u=V3.rot(Q.u,k,dt);Q.v=V3.rot(Q.v,k,dt);Q.vc=V3.add(M.c,V3.rot(V3.add(Q.vc,M.c,-1),k,dt));}orthoFix();reproj();}
+function samp(x,y,z){const fx=x/MVS-.5,fy=y/MVS-.5,fz=z/MVS-.5,x0=Math.floor(fx),y0=Math.floor(fy),z0=Math.floor(fz),X=MSH[2];
+ if(x0<0||y0<0||z0<0||x0>=X-1||y0>=MSH[1]-1||z0>=MSH[0]-1)return -1024;
+ const tx=fx-x0,ty=fy-y0,tz=fz-z0,i=z0*MPL+y0*X+x0,j=i+MPL;
+ const a=MV[i]+(MV[i+1]-MV[i])*tx,b=MV[i+X]+(MV[i+X+1]-MV[i+X])*tx,c=MV[j]+(MV[j+1]-MV[j])*tx,d=MV[j+X]+(MV[j+X+1]-MV[j+X])*tx,e=a+(b-a)*ty;return e+(c+(d-c)*ty-e)*tz;}
+function labAt(x,y,z){const ix=Math.round(x/MVS-.5),iy=Math.round(y/MVS-.5),iz=Math.round(z/MVS-.5);if(ix<0||iy<0||iz<0||ix>=MSH[2]||iy>=MSH[1]||iz>=MSH[0])return 0;return ML[iz*MPL+iy*MSH[2]+ix];}
+const MOFF={};
+function paneW(id){return $('#mpr'+id).clientWidth;}
+function w2s(id,p){const W=paneW(id),P=M.P[id],k=W/(FOVB/M.zoom),q=V3.add(p,P.vc,-1);return[W/2+V3.dot(q,P.u)*k,W/2+V3.dot(q,P.v)*k];}
+function s2w(id,sx,sy){const W=paneW(id),P=M.P[id],k=W/(FOVB/M.zoom);return V3.add(V3.add(P.vc,P.u,(sx-W/2)/k),P.v,(sy-W/2)/k);}
+function paneLines(id){const P=M.P[id],n=nOf(id);return['A','B','C'].filter(q=>q!==id).map(q=>{const d=V3.cross(n,nOf(q)),dx=V3.dot(d,P.u),dy=V3.dot(d,P.v),l=Math.hypot(dx,dy)||1;return{q,dx:dx/l,dy:dy/l};});}
+function anat(v){const a=v.map(Math.abs),i=a.indexOf(Math.max(a[0],a[1],a[2]));return i===0?(v[0]>0?'L':'R'):i===1?(v[1]>0?'P':'A'):(v[2]>0?'I':'S');}
+function renderPane(id,low){
+ const cvs=$('#mpr'+id);if(!cvs.clientWidth||!M.ready)return;const {ctx:x,W,dpr}=prep(cvs);
+ let G=Math.round(clamp(W*Math.min(dpr,2)*.75,180,440));if(M.slab>0)G=Math.min(G,300);if(low)G=Math.round(G*.5);
+ const o=MOFF[id]||(MOFF[id]=document.createElement('canvas'));if(o.width!==G){o.width=G;o.height=G;}
+ const oc=o.getContext('2d'),img=oc.createImageData(G,G),d=img.data,P=M.P[id],n=nOf(id),fov=FOVB/M.zoom,s=fov/G,u=P.u,v=P.v;
+ const o0=[0,1,2].map(a=>P.vc[a]-(u[a]+v[a])*(fov/2)+(u[a]+v[a])*s/2);
+ const ns=M.slab>0?Math.max(2,Math.round(M.slab/MVS)+1):1,offs=[];for(let q=0;q<ns;q++)offs.push(ns===1?0:-M.slab/2+M.slab*q/(ns-1));
+ const lo=M.wl-M.ww/2,sc=255/M.ww,lab=M.labels,LB=M.cs.labels;
+ for(let gy=0;gy<G;gy++){const rx=o0[0]+v[0]*s*gy,ry=o0[1]+v[1]*s*gy,rz=o0[2]+v[2]*s*gy;
+  for(let gx=0;gx<G;gx++){const px=rx+u[0]*s*gx,py=ry+u[1]*s*gx,pz=rz+u[2]*s*gx;let h;
+   if(ns===1)h=samp(px,py,pz);else{h=-3000;for(let q=0;q<ns;q++){const t=offs[q],w=samp(px+n[0]*t,py+n[1]*t,pz+n[2]*t);if(w>h)h=w;}}
+   let g=(h-lo)*sc;g=g<0?0:g>255?255:g;let r=g,gg=g,b=g;
+   if(lab){const L=labAt(px,py,pz);if(L&&LB[L]){const c=LB[L].c;r=r*.6+c[0]*.4;gg=gg*.6+c[1]*.4;b=b*.6+c[2]*.4;}}
+   const p=(gy*G+gx)*4;d[p]=r;d[p+1]=gg;d[p+2]=b;d[p+3]=255;}}
+ oc.putImageData(img,0,0);x.fillStyle='#000';x.fillRect(0,0,W,W);x.imageSmoothingEnabled=true;x.imageSmoothingQuality='high';x.drawImage(o,0,0,W,W);
+ const c=w2s(id,M.c);
+ paneLines(id).forEach(L=>{x.strokeStyle=PC[L.q];x.fillStyle=PC[L.q];x.lineWidth=1.5;x.globalAlpha=.92;const g=14,R=W*1.6,hr=W*.3;
+  x.beginPath();x.moveTo(c[0]+L.dx*g,c[1]+L.dy*g);x.lineTo(c[0]+L.dx*R,c[1]+L.dy*R);x.moveTo(c[0]-L.dx*g,c[1]-L.dy*g);x.lineTo(c[0]-L.dx*R,c[1]-L.dy*R);x.stroke();
+  [1,-1].forEach(sg=>{x.beginPath();x.arc(c[0]+L.dx*hr*sg,c[1]+L.dy*hr*sg,5.5,0,7);x.fill();});x.globalAlpha=1;});
+ x.strokeStyle='#fff';x.lineWidth=1.2;x.beginPath();x.arc(c[0],c[1],5,0,7);x.stroke();
+ const inPlane=p=>Math.abs(V3.dot(V3.add(p,M.c,-1),n))<Math.max(1,MVS*.75);
+ const dm=(m)=>{if(!inPlane(m.a)||!inPlane(m.b))return;const a=w2s(id,m.a),b=w2s(id,m.b);x.strokeStyle='#FFC24B';x.lineWidth=1.6;x.beginPath();x.moveTo(a[0],a[1]);x.lineTo(b[0],b[1]);x.stroke();
+  const t=fmt(Math.hypot(...V3.add(m.b,m.a,-1)))+' mm';x.font='500 12px "IBM Plex Mono", monospace';x.textAlign='left';x.textBaseline='middle';x.lineWidth=3;x.strokeStyle='rgba(0,0,0,.9)';x.strokeText(t,b[0]+7,b[1]-7);x.fillStyle='#FFC24B';x.fillText(t,b[0]+7,b[1]-7);};
+ M.meas.forEach(dm);if(M.drag&&M.drag.kind==='measure'&&M.drag.id===id)dm(M.drag.m);
+ const tilt=deg(Math.acos(Math.min(1,Math.abs(V3.dot(n,PORIG[id])))));
+ x.font='600 12px "IBM Plex Mono", monospace';x.textBaseline='top';x.textAlign='left';x.fillStyle=PC[id];x.fillText(PNAME[id]+(tilt>=1?` · oblique ${Math.round(tilt)}°`:''),8,7);
+ x.font='500 11px "IBM Plex Mono", monospace';x.fillStyle='#E2B04F';x.textAlign='center';x.textBaseline='middle';
+ x.fillText(anat(u),W-9,W/2);x.fillText(anat(u.map(q=>-q)),9,W/2);x.fillText(anat(v),W/2,W-9);x.fillText(anat(v.map(q=>-q)),W/2,24);
+ x.fillStyle='#93A1AC';x.textAlign='right';x.textBaseline='top';x.fillText(M.slab>0?`MIP ${M.slab} mm`:`${M.cs.vs} mm voxels`,W-8,7);
+}
+function drawArm(){
+ const cv_=$('#mprArm');if(!cv_.clientWidth)return;const {ctx:x,W}=prep(cv_);x.fillStyle='#030506';x.fillRect(0,0,W,W);
+ const m=56,top=34,X=a=>m+(a+45)/90*(W-m-16),Y=b=>top+(45-b)/90*(W-top-48);
+ x.strokeStyle='#1f2a31';x.lineWidth=1;x.font='10.5px "IBM Plex Mono", monospace';x.fillStyle='#7E8A93';
+ for(let a=-45;a<=45;a+=15){x.beginPath();x.moveTo(X(a),Y(45));x.lineTo(X(a),Y(-45));x.stroke();x.textAlign='center';x.textBaseline='top';x.fillText(a===0?'AP':(a<0?'RAO ':'LAO ')+Math.abs(a),X(a),Y(-45)+5);}
+ for(let b=-45;b<=45;b+=15){x.beginPath();x.moveTo(X(-45),Y(b));x.lineTo(X(45),Y(b));x.stroke();x.textAlign='right';x.textBaseline='middle';x.fillText(b===0?'0':(b>0?'CRA ':'CAU ')+Math.abs(b),X(-45)-4,Y(b));}
+ const beta=(n,a)=>{const r=a*Math.PI/180,num=n[0]*Math.sin(r)-n[1]*Math.cos(r);return Math.abs(n[2])<1e-6?(num>=0?90:-90):deg(Math.atan(num/n[2]));};
+ const curve=(n,col,dash)=>{x.strokeStyle=col;x.lineWidth=2;x.setLineDash(dash);x.beginPath();let on=false;for(let a=-45;a<=45;a+=.5){const b=beta(n,a);if(b<-45||b>45){on=false;continue;}on?x.lineTo(X(a),Y(b)):x.moveTo(X(a),Y(b));on=true;}x.stroke();x.setLineDash([]);};
+ if(M.showRef)curve(M.cs.ref.n,'#5CC48A',[5,4]);
+ const n=M.E?M.E[2]:[0,0,1];curve(n,'#F0A43A',[]);
+ const b0=beta(n,0);if(b0>=-45&&b0<=45){x.fillStyle='#F0A43A';x.beginPath();x.arc(X(0),Y(b0),4,0,7);x.fill();}
+ x.font='600 12px "IBM Plex Mono", monospace';x.fillStyle='#D9E1E6';x.textAlign='left';x.textBaseline='top';x.fillText('C-arm views: axial plane edge-on',8,7);
+ x.font='500 11px "IBM Plex Mono", monospace';x.fillStyle='#F0A43A';const fmtB=b=>b>=0?`CRA ${Math.abs(b).toFixed(0)}°`:`CAU ${Math.abs(b).toFixed(0)}°`;
+ x.fillText(`RAO 20 ${fmtB(beta(n,-20))} · AP ${fmtB(b0)} · LAO 20 ${fmtB(beta(n,20))}`,8,W-18);
+ if(M.showRef){x.fillStyle='#5CC48A';x.textAlign='right';x.fillText(M.cs.exact?'dashed: true annulus':'dashed: dataset annulus',W-8,24);}
+}
+let mraf=0,mlow=false;
+function mprReq(full){if(full===true)mlow=false;if(!mraf)mraf=requestAnimationFrame(()=>{mraf=0;$('#mZoomLbl').textContent=fmt(M.zoom)+'×';if($('#view-mpr').hidden)return;['A','B','C'].forEach(id=>renderPane(id,mlow&&!!M.drag));drawArm();exFeedback();});}
+function mprReady(key){CASES[key].ready=true;if(M.cs.key===key){useCase(M.cs);M.ready=true;$('#mprLoading').hidden=true;mprReq(true);}}
+async function loadRootCase(){const cs=CASES.root,[Z,Y,X]=cs.sh,PL_=Y*X;cs.vol=new Int16Array(Z*PL_);cs.lab=new Uint8Array(Z*PL_);
+ try{await Promise.all(cs.files.map(async c=>{const r=await fetch(c.file);if(!r.ok)throw new Error(`${c.file}: HTTP ${r.status}`);const bmp=await createImageBitmap(await r.blob(),{colorSpaceConversion:'none',premultiplyAlpha:'none'});
+   const cn=document.createElement('canvas');cn.width=bmp.width;cn.height=bmp.height;const cx=cn.getContext('2d',{willReadFrequently:true});cx.drawImage(bmp,0,0);const d=cx.getImageData(0,0,bmp.width,bmp.height).data,n=(c.z1-c.z0)*PL_,base=c.z0*PL_;
+   for(let k=0,p=0;k<n;k++,p+=4){cs.vol[base+k]=((d[p]<<8)|d[p+1])-1024;cs.lab[base+k]=d[p+2];}}));
+  const rr=rng(4242);for(let i=0;i<cs.vol.length;i+=2){const u=rr()||1e-9,w=rr(),m=Math.sqrt(-2*Math.log(u))*7;cs.vol[i]+=Math.round(m*Math.cos(6.2832*w));if(i+1<cs.vol.length)cs.vol[i+1]+=Math.round(m*Math.sin(6.2832*w));}
+  mprReady('root');}
+ catch(e){if(M.cs.key==='root')$('#mprLoadMsg').textContent='Could not load the root reconstruction ('+e.message+'). Reload the page to try again.';}}
+function switchCase(key){const cs=CASES[key];M.cs=cs;cs.lab=key==='cta'?LAB:cs.lab;$$('#mCase button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.case===key)));
+ M.meas=[];M.last=null;M.checked=false;M.marks={};M.ex=Math.min(M.ex,EXS().length-1);
+ $('#exList').innerHTML=EXS().map((e,i)=>`<li><button type="button"><span class="n">${String(i+1).padStart(2,'0')}</span><span>${e.t}</span></button></li>`).join('');
+ $$('#exList button').forEach((b,i)=>b.addEventListener('click',()=>{M.ex=i;exCard();}));
+ $('#caseNote').innerHTML=key==='root'?'<b>Root reconstruction.</b> The same patient\'s real aortic root, resampled to 0.5 mm and sharpened. The real scan cannot show the cusps, so they are modelled and fitted to this patient\'s own sinus walls. Root, sinus and STJ borders are rebuilt from this patient\'s measured lumen surface, the basal ring is the ellipse fitted to the real annulus, and the proximal coronaries follow this patient\'s epicardial fat planes. Every answer is known exactly.':'<b>Real body CTA.</b> Public dataset at 1.5 mm, probably not ECG-gated. The answer plane is fitted to the dataset\'s automatic annulus label, so treat it as approximate.';
+ const ready=cs.ready;M.ready=ready;if(ready)useCase(cs);$('#mprLoading').hidden=ready;if(!ready)$('#mprLoadMsg').textContent=key==='cta'?'Loading the body CTA':'Loading the root reconstruction';
+ setFrame(frameFrom([0,0,1]),cs.ref.c,cs.zoom);exCard();mReadout();}
+
+/* exercises */
+function exCard(){const L=EXS(),i=Math.min(M.ex,L.length-1),e=L[i];$('#exCard').innerHTML=`<div class="num">EXERCISE ${i+1} OF ${L.length} · ${M.cs.name.toUpperCase()}</div><h3>${e.t}</h3><ol class="steps">${e.steps.map(s=>`<li>${s}</li>`).join('')}</ol><div class="exbtns">${e.btns.map(([k,l])=>`<button type="button" class="btn${k==='check'?' primary':''}" data-act="${k}">${l}</button>`).join('')}</div><div class="hinges" id="exFb" aria-live="polite"></div>`;
+ $$('#exCard [data-act]').forEach(b=>b.addEventListener('click',()=>exAct(b.dataset.act)));$$('#exList button').forEach((b,j)=>b.setAttribute('aria-current',j===i?'true':'false'));exFeedback();}
+function annGeom(){const R=M.cs.ref,e3=M.E[2],ang=deg(Math.acos(Math.min(1,Math.abs(V3.dot(e3,R.n))))),off=-V3.dot(V3.add(M.c,R.c,-1),R.n);return{ang,off};}
+function exAct(k){
+ if(!M.ready){toast('The case is still loading');return;}
+ const cs=M.cs;
+ if(k==='root'){M.checked=false;setFrame(frameFrom([0,0,1]),cs.ref.c,cs.zoom);}
+ else if(k==='check'){M.checked=true;exFeedback();}
+ else if(k==='auto'){setFrame(frameFrom(cs.ref.n),cs.ref.c,cs.zoom);M.checked=true;}
+ else if(k==='zoomAnn'){M.zoom=cs.exact?5:4;for(const id in M.P)M.P[id].vc=M.c.slice();mprReq(true);}
+ else if(k==='ref'){M.showRef=!M.showRef;drawArm();}
+ else if(k==='goR'||k==='goL'){M.vessel=k==='goR'?'R':'L';setFrame(frameFrom([0,0,1]),cs.vessel[M.vessel].c,3);}
+ else if(k==='alignV'){setFrame(frameFrom(cs.vessel[M.vessel].d),cs.vessel[M.vessel].c,3);}
+ else if(k==='markLM'||k==='markRCA'){const g=annGeom();if(g.ang>3){toast('Align the axial pane with the annulus first (Show the answer plane)');return;}M.marks[k==='markLM'?'LM':'RCA']=g.off;}
+ else if(k==='revealCor'){M.marks.reveal=true;}
+ exFeedback();}
+function exFeedback(){const el=$('#exFb');if(!el||!M.E)return;const cs=M.cs,e3=M.E[2],{ang,off}=annGeom(),ex=EXS()[Math.min(M.ex,EXS().length-1)].t;let h='';
+ const tol=cs.exact?[3,8]:[5,12],planeChip=`<span class="chip ${ang<tol[0]?'good':ang<tol[1]?'warn':'bad'}">Axial plane ${ang.toFixed(1)}° from the ${cs.exact?'true':'reference'} annulus plane</span>`;
+ const offChip=`<span class="chip ${Math.abs(off)<1?'good':Math.abs(off)<3?'warn':'bad'}">${Math.abs(off).toFixed(1)} mm ${off>0?'toward the aorta':'toward the LV'}</span>`;
+ if(ex==='Find the annular plane'){h=M.checked?planeChip+offChip:'<span class="chip neutral">Press Check my plane when the axial pane shows the annulus en face</span>';}
+ else if(ex==='Measure the annulus'){h=planeChip+offChip;if(cs.exact&&M.last){const len=Math.hypot(...V3.add(M.last.b,M.last.a,-1)),t=cs.truth,near=Math.abs(len-t.max)<Math.abs(len-t.min)?['max',t.max]:['min',t.min],d=len-near[1];h+=`<span class="chip ${Math.abs(d)<1?'good':Math.abs(d)<2?'warn':'bad'}">Your line ${fmt(len)} mm vs true ${near[0]} ${fmt(near[1])} mm (${d>=0?'+':''}${fmt(d)})</span>`;}
+  if(cs.exact)h+=`<span class="chip neutral">True annulus: ${cs.truth.max} × ${cs.truth.min} mm · area ${cs.truth.area} mm² · perimeter ${cs.truth.per} mm</span>`;}
+ else if(ex==='Read the C-arm angles'){h=planeChip+'<span class="chip neutral">Edge-on views only mean something once the axial pane sits on the annulus</span>';}
+ else if(ex==='Measure coronary heights'){h=`<span class="chip ${ang<3?'good':'warn'}">Axial pane ${ang<3?'parallel to':ang.toFixed(1)+'° off'} the annulus · ${off>=0?off.toFixed(1)+' mm above':Math.abs(off).toFixed(1)+' mm below'} it</span>`;
+  ['LM','RCA'].forEach(k=>{if(M.marks[k]!==undefined){const d=M.marks[k]-cs.truth[k];h+=`<span class="chip ${Math.abs(d)<1?'good':Math.abs(d)<2?'warn':'bad'}">${k==='LM'?'Left main':'RCA'} marked at ${fmt(M.marks[k])} mm${M.marks.reveal?` · true ${fmt(cs.truth[k])} mm`:''}</span>`;}});
+  if(M.marks.reveal)h+=`<span class="chip neutral">True heights: left main ${cs.truth.LM} mm, RCA ${cs.truth.RCA} mm (lower edge of each ostium)</span>`;}
+ else{const V=cs.vessel[M.vessel],a=deg(Math.acos(Math.min(1,Math.abs(V3.dot(e3,V.d))))),str=(1/Math.cos(a*Math.PI/180)-1)*100;h=`<span class="chip ${a<8?'good':a<20?'warn':'bad'}">Axial plane ${a.toFixed(0)}° from perpendicular to the ${V.n}</span><span class="chip neutral">Lumen stretched up to ${str<1?'<1':str.toFixed(0)}% along one axis</span>`;}
+ el.innerHTML=h;}
+
+/* readout */
+function mReadout(){const el=$('#mReadout');
+ if(M.last){const len=Math.hypot(...V3.add(M.last.b,M.last.a,-1));el.innerHTML=`<span>Length</span> <span class="val">${fmt(len)} mm</span><button type="button" class="btn" data-s="max">Use as annulus max</button><button type="button" class="btn" data-s="min">Use as annulus min</button>${M.cs.key==='cta'?'<button type="button" class="btn" data-s="R">Right iliac</button><button type="button" class="btn" data-s="L">Left iliac</button>':''}<button type="button" class="btn" data-s="clear">Clear lines</button>`;return;}
+ if(M.tool==='measure'){el.innerHTML='<span class="hint">Drag across the structure in any pane. Lines stay visible only while their plane is showing.</span>';return;}
+ if(M.probe&&M.ready){const p=M.probe,h=samp(p[0],p[1],p[2]),L=labAt(p[0],p[1],p[2]),LB=M.cs.labels;el.innerHTML=`<span class="val">${Math.round(h)} HU</span> <span>${L&&LB[L]?LB[L].n:hint(h)}</span>`;return;}
+ el.innerHTML='<span class="hint">Drag the center to move · drag a colored line away from the center to rotate · scroll a pane to move through it.</span>';}
+$('#mReadout').addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(!b||!M.last)return;const k=b.dataset.s,len=+fmt(Math.hypot(...V3.add(M.last.b,M.last.a,-1)));
+ if(k==='clear'){M.meas=[];M.last=null;mReadout();mprReq(true);return;}
+ if(k==='max'||k==='min'){$(k==='max'?'#aMaj':'#aMin').value=len;annulus();toast(`Sent ${fmt(len)} mm as annulus ${k} (Cardiac CT)`);}
+ else{$(k==='R'?'#mldR':'#mldL').value=fmt(len);sfar();toast(`Sent ${fmt(len)} mm to Access check (${k==='R'?'right':'left'})`);}});
+
+/* pointer handling per pane */
+['A','B','C'].forEach(id=>{const cvs=$('#mpr'+id);
+ const loc=e=>{const r=cvs.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top];};
+ const step=()=>Math.max(.5,MVS);
+ cvs.addEventListener('wheel',e=>{if(!M.ready)return;e.preventDefault();M.c=V3.add(M.c,nOf(id),Math.sign(e.deltaY)*step()*(e.shiftKey?5:1));reproj();mprReq(true);},{passive:false});
+ cvs.addEventListener('keydown',e=>{const m={ArrowUp:-1,ArrowDown:1,PageUp:-5,PageDown:5};if(!(e.key in m)||!M.ready)return;e.preventDefault();M.c=V3.add(M.c,nOf(id),m[e.key]*step());reproj();mprReq(true);});
+ cvs.addEventListener('pointerdown',e=>{if(!M.ready)return;cvs.focus({preventScroll:true});cvs.setPointerCapture(e.pointerId);const [sx,sy]=loc(e);
+  if(M.tool==='measure'){const p=s2w(id,sx,sy);M.drag={kind:'measure',id,m:{a:p,b:p}};return;}
+  if(M.tool==='window'){M.drag={kind:'window',x:e.clientX,y:e.clientY,l:M.wl,w:M.ww};return;}
+  if(M.tool==='pan'){M.drag={kind:'pan',id,x:e.clientX,y:e.clientY,vc:M.P[id].vc.slice()};return;}
+  const c=w2s(id,M.c),dc=Math.hypot(sx-c[0],sy-c[1]);
+  if(dc>26){for(const L of paneLines(id)){if(Math.abs((sx-c[0])*L.dy-(sy-c[1])*L.dx)<9){M.drag={kind:'rotate',id,ang:Math.atan2(sy-c[1],sx-c[0])};mlow=true;return;}}}
+  M.c=s2w(id,sx,sy);reproj();M.drag={kind:'move',id};mlow=true;mprReq();});
+ cvs.addEventListener('pointermove',e=>{const [sx,sy]=loc(e),d=M.drag;
+  if(!d){if(!M.ready)return;if(M.tool==='nav'){const c=w2s(id,M.c),dc=Math.hypot(sx-c[0],sy-c[1]);let cur='crosshair';if(dc<14)cur='move';else if(dc>26&&paneLines(id).some(L=>Math.abs((sx-c[0])*L.dy-(sy-c[1])*L.dx)<9))cur='grab';cvs.style.cursor=cur;}
+   if(e.pointerType==='mouse'&&M.tool!=='measure'){M.probe=s2w(id,sx,sy);if(!M.last)mReadout();}return;}
+  if(d.kind==='move'){M.c=s2w(id,sx,sy);reproj();mprReq();}
+  else if(d.kind==='rotate'){const c=w2s(id,M.c),a=Math.atan2(sy-c[1],sx-c[0]);let da=a-d.ang;if(da>Math.PI)da-=2*Math.PI;if(da<-Math.PI)da+=2*Math.PI;d.ang=a;rotatePane(id,da);mprReq();}
+  else if(d.kind==='measure'){d.m.b=s2w(id,sx,sy);mprReq();}
+  else if(d.kind==='window'){mSetWin(d.l+(e.clientY-d.y)*2,d.w+(e.clientX-d.x)*4);}
+  else if(d.kind==='pan'){const k=paneW(id)/(FOVB/M.zoom),P=M.P[id];P.vc=V3.add(V3.add(d.vc,P.u,-(e.clientX-d.x)/k),P.v,-(e.clientY-d.y)/k);mprReq();}});
+ const end=()=>{const d=M.drag;if(!d)return;if(d.kind==='measure'){const len=Math.hypot(...V3.add(d.m.b,d.m.a,-1));if(len>.6){M.meas.push(d.m);M.last=d.m;}mReadout();}M.drag=null;mprReq(true);};
+ cvs.addEventListener('pointerup',end);cvs.addEventListener('pointercancel',end);
+ cvs.addEventListener('pointerleave',()=>{if(!M.drag&&M.probe){M.probe=null;mReadout();}});
+});
+const MPRE={soft:{n:'Soft tissue',l:40,w:400},cardiac:{n:'Cardiac CTA',l:250,w:900},wide:{n:'Wide / calcium',l:500,w:1600},lung:{n:'Lung',l:-600,w:1500}};
+function mSetWin(l,w){M.wl=clamp(l,-1000,1500);M.ww=clamp(w,1,3000);$$('#mPresets button').forEach(b=>{const p=MPRE[b.dataset.p];b.setAttribute('aria-pressed',String(p.l===M.wl&&p.w===M.ww));});mprReq();}
+$('#mPresets').insertAdjacentHTML('beforeend','<div class="seg">'+Object.entries(MPRE).map(([k,p])=>`<button type="button" data-p="${k}" aria-pressed="${k==='cardiac'}">${p.n}</button>`).join('')+'</div>');
+$$('#mPresets button').forEach(b=>b.addEventListener('click',()=>{const p=MPRE[b.dataset.p];mSetWin(p.l,p.w);mprReq(true);}));
+$$('#mTools button').forEach(b=>b.addEventListener('click',()=>{M.tool=b.dataset.tool;$$('#mTools button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));if(M.tool!=='measure')M.last=null;M.probe=null;mReadout();}));
+$('#mZoomIn').onclick=()=>{M.zoom=clamp(+(M.zoom*1.25).toFixed(2),.35,10);mprReq(true);};
+$('#mZoomOut').onclick=()=>{M.zoom=clamp(+(M.zoom/1.25).toFixed(2),.35,10);mprReq(true);};
+$('#mReset').onclick=()=>{if(!M.ready)return;setFrame(frameFrom([0,0,1]),M.c,M.zoom);};
+$('#mLbl').addEventListener('change',e=>{M.labels=e.target.checked;mprReq(true);});
+$('#mSlab').addEventListener('input',e=>{M.slab=+e.target.value;$('#mSlabO').textContent=M.slab?M.slab+' mm':'Off';mprReq(true);});
+$$('#mCase button').forEach(b=>b.addEventListener('click',()=>switchCase(b.dataset.case)));
+switchCase('root');loadRootCase();
+
+
+/* ======================= BASICS ======================= */
+const TIS=[['Air',-1000],['Lung',-860],['Fat',-95],['Water, bile',0],['Unenhanced blood',45],['Muscle',52],['Liver, arterial',92],['Iodinated blood',380],['Calcified plaque',900],['Cortical bone',1300],['Metal valve frame',3000]];
+const bPre={soft:PRESETS.soft,vasc:PRESETS.vasc,wide:PRESETS.wide,lung:PRESETS.lung};
+$('#bPresets').innerHTML='<span class="label">Presets</span><div class="seg">'+Object.entries(bPre).map(([k,p])=>`<button type="button" data-p="${k}" aria-pressed="${k==='soft'}">${p.n}</button>`).join('')+'</div>';
+function swatches(){const l=+$('#bWl').value,w=+$('#bWw').value,lo=l-w/2,hi=l+w/2;$('#bWlO').textContent=l;$('#bWwO').textContent=w;
+ $('#swatches').innerHTML=TIS.map(([n,h])=>{const g=Math.round(clamp((h-lo)/w,0,1)*255),cls=h<=lo?'clipL':h>=hi?'clipH':'';return`<div class="sw ${cls}"><i style="background:rgb(${g},${g},${g})"></i><b>${n}</b><span>${h} HU</span></div>`;}).join('');
+ $$('#bPresets button').forEach(b=>{const p=bPre[b.dataset.p];b.setAttribute('aria-pressed',String(p.l===l&&p.w===w));});}
+$$('#bPresets button').forEach(b=>b.addEventListener('click',()=>{const p=bPre[b.dataset.p];$('#bWl').value=p.l;$('#bWw').value=p.w;swatches();}));
+$('#bWl').addEventListener('input',swatches);$('#bWw').addEventListener('input',swatches);
+
+// blooming lab
+const BL={n:240,sp:.1,win:'vasc',base:null};
+(function(){const n=BL.n,c=n/2,f=new Float32Array(n*n);for(let y=0;y<n;y++)for(let x=0;x<n;x++){const mx=(x+.5-c)*BL.sp,my=(y+.5-c)*BL.sp,r=Math.hypot(mx,my),a=Math.atan2(my,mx);let v=40;if(r<=3)v=380;else if(r<=3.6)v=60;const arc=Math.abs(a)<.95||Math.abs(Math.abs(a)-Math.PI)<.95;if(r>3&&r<=4.4&&arc)v=1000;f[y*n+x]=v;}BL.base=f;})();
+function gblur(src,n,s){if(s<.01)return src.slice();const R=Math.ceil(3*s),k=[];let sum=0;for(let i=-R;i<=R;i++){const v=Math.exp(-i*i/(2*s*s));k.push(v);sum+=v;}for(let i=0;i<k.length;i++)k[i]/=sum;const t=new Float32Array(src.length),o=new Float32Array(src.length);
+ for(let y=0;y<n;y++)for(let x=0;x<n;x++){let a=0;for(let i=-R;i<=R;i++){const xx=clamp(x+i,0,n-1);a+=src[y*n+xx]*k[i+R];}t[y*n+x]=a;}
+ for(let y=0;y<n;y++)for(let x=0;x<n;x++){let a=0;for(let i=-R;i<=R;i++){const yy=clamp(y+i,0,n-1);a+=t[yy*n+x]*k[i+R];}o[y*n+x]=a;}return o;}
+function bloom(){const sig=+$('#bSig').value;$('#bSigO').textContent=sig.toFixed(2)+' mm';const n=BL.n,f=gblur(BL.base,n,sig/BL.sp),W=BL.win==='vasc'?{l:200,w:700}:{l:500,w:1600},lo=W.l-W.w/2;
+ const g=h=>clamp((h-lo)/W.w,0,1),T=lo+W.w*(g(380)+g(1000))/2;
+ const row=n/2,prof=[];for(let x=0;x<n;x++)prof.push((f[(row-1)*n+x]+f[row*n+x])/2);
+ const c=n/2;let L=null,R=null;for(let x=c;x>0;x--){if(prof[x-1]>=T){const t=(T-prof[x])/(prof[x-1]-prof[x]);L=(x-t)+.5;break;}}for(let x=c;x<n-1;x++){if(prof[x+1]>=T){const t=(T-prof[x])/(prof[x+1]-prof[x]);R=(x+t)+.5;break;}}
+ const app=(L!==null&&R!==null)?(R-L)*BL.sp:NaN;$('#bApp').innerHTML=isNaN(app)?'–':`${fmt(app)} <small>mm</small>`;$('#bErr').innerHTML=isNaN(app)?'–':`${app<6?'−':'+'}${fmt(Math.abs(app-6)/6*100,0)} <small>%</small>`;
+ // image
+ const cvb=$('#bloomCv');if(cvb.clientWidth){const {ctx:x,W:w}=prep(cvb);const o=document.createElement('canvas');o.width=n;o.height=n;const oc=o.getContext('2d'),id=oc.createImageData(n,n);for(let i=0;i<f.length;i++){const v=g(f[i])*255;id.data[i*4]=id.data[i*4+1]=id.data[i*4+2]=v;id.data[i*4+3]=255;}oc.putImageData(id,0,0);x.imageSmoothingEnabled=true;x.drawImage(o,0,0,w,w);
+  const s=w/n;x.strokeStyle='rgba(255,194,75,.55)';x.setLineDash([3,3]);x.beginPath();x.moveTo(0,row*s);x.lineTo(w,row*s);x.stroke();x.setLineDash([]);
+  if(L!==null){x.strokeStyle='#FFC24B';x.lineWidth=2;[L,R].forEach(p=>{x.beginPath();x.moveTo(p*s,row*s-14);x.lineTo(p*s,row*s+14);x.stroke();});}
+  x.strokeStyle='#55C3D3';x.lineWidth=1.5;x.setLineDash([4,3]);[c-30,c+30].forEach(p=>{x.beginPath();x.moveTo(p*s,row*s-22);x.lineTo(p*s,row*s+22);x.stroke();});x.setLineDash([]);
+  x.font='500 11px "IBM Plex Mono", monospace';x.fillStyle='#D9E1E6';x.fillText('24 mm field',8,16);}
+ // profile
+ const pc=$('#bloomProf');if(pc.clientWidth){const {ctx:x,W,H}=prep(pc,120);const m=26,X=i=>m+(i/(n-1))*(W-m-8),Y=h=>8+(1-(h+100)/1200)*(H-28);
+  x.strokeStyle=tok('--line');x.lineWidth=1;x.beginPath();[0,500,1000].forEach(h=>{x.moveTo(m,Y(h));x.lineTo(W-8,Y(h));});x.stroke();
+  x.fillStyle=tok('--muted');x.font='10px "IBM Plex Mono", monospace';x.textAlign='right';x.textBaseline='middle';[0,500,1000].forEach(h=>x.fillText(h,m-4,Y(h)));
+  x.textAlign='center';x.textBaseline='top';x.fillText('HU across the vessel (24 mm)',(W+m)/2,H-14);
+  x.strokeStyle=tok('--cyan');x.setLineDash([4,3]);[c-30,c+30].forEach(p=>{x.beginPath();x.moveTo(X(p),8);x.lineTo(X(p),H-20);x.stroke();});x.setLineDash([]);
+  x.strokeStyle=tok('--accent');x.beginPath();x.moveTo(m,Y(T));x.lineTo(W-8,Y(T));x.stroke();x.fillStyle=tok('--accent');x.textAlign='left';x.textBaseline='bottom';x.fillText(`edge on screen ≈ ${Math.round(T)} HU`,m+4,Y(T)-2);
+  x.strokeStyle=tok('--ink');x.lineWidth=1.6;x.beginPath();prof.forEach((h,i)=>{i?x.lineTo(X(i),Y(h)):x.moveTo(X(i),Y(h));});x.stroke();}}
+$('#bSig').addEventListener('input',bloom);
+$$('#bloomWin button').forEach(b=>b.addEventListener('click',()=>{BL.win=b.dataset.w;$$('#bloomWin button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));bloom();}));
+
+/* ======================= CARDIAC: gating ======================= */
+const GT={mode:'retro'};
+function gate(){const HR=+$('#gHr').value,ph=+$('#gPh').value/100;$('#gHrO').textContent=HR+' bpm';$('#gPhO').textContent=Math.round(ph*100)+'%';
+ const RR=60000/HR,QT=400*Math.sqrt(RR/1000),dStart=QT+140,dEnd=RR-170,quiet=Math.max(0,dEnd-dStart),win=100;
+ const c=$('#gateCv');if(c.clientWidth){const {ctx:x,W,H}=prep(c,250);const t0=-90,t1=2*RR+90,m=12,X=t=>m+(t-t0)/(t1-t0)*(W-2*m);
+  const g=(t,mu,w)=>Math.exp(-((t-mu)/w)*((t-mu)/w));const ecg=t=>{let v=0;for(let k=-1;k<=2;k++){const u=t-k*RR;v+=-.12*g(u,-28,10)+g(u,0,11)-.25*g(u,26,10)+.3*g(u,QT-95,48)+.13*g(u,RR-120,28);}return v;};
+  const yE=v=>112-v*82;
+  for(let k=0;k<2;k++){x.fillStyle=tok('--cyan-soft');x.fillRect(X(k*RR),18,X(k*RR+QT)-X(k*RR),104);if(quiet>0){x.fillStyle=tok('--good-soft');x.fillRect(X(k*RR+dStart),18,X(k*RR+dEnd)-X(k*RR+dStart),104);}}
+  x.font='500 11px "IBM Plex Mono", monospace';x.textBaseline='top';x.fillStyle=tok('--cyan');x.textAlign='left';x.fillText('Systole',X(0)+4,20);if(quiet>0){x.fillStyle=tok('--good');x.fillText('Quiet diastole',X(dStart)+4,20);}
+  x.strokeStyle=tok('--ink');x.lineWidth=1.5;x.beginPath();for(let px=0;px<=W-2*m;px++){const t=t0+px/(W-2*m)*(t1-t0),y=yE(ecg(t));px?x.lineTo(m+px,y):x.moveTo(m+px,y);}x.stroke();
+  x.fillStyle=tok('--muted');x.textAlign='center';for(let k=0;k<=2;k++){if(k*RR<=t1)x.fillText('R',X(k*RR),2);}
+  // exposure track
+  const ey=134,eh=26;x.fillStyle=tok('--muted');x.textAlign='left';x.fillText('X-ray tube current',m,ey-14);x.fillStyle=tok('--sunk');x.fillRect(m,ey,W-2*m,eh);
+  x.fillStyle=tok('--accent');for(let k=0;k<2;k++){const a=k*RR+ph*RR-win,b=k*RR+ph*RR+win;if(GT.mode==='retro'){x.globalAlpha=.35;x.fillRect(X(k*RR),ey+eh*.75,X((k+1)*RR)-X(k*RR),eh*.25);x.globalAlpha=1;x.fillRect(X(a),ey,X(b)-X(a),eh);}else if(k===0){x.fillRect(X(a),ey,X(b)-X(a),eh);}}
+  x.strokeStyle=tok('--accent');x.setLineDash([4,3]);for(let k=0;k<2;k++){const t=k*RR+ph*RR;x.beginPath();x.moveTo(X(t),16);x.lineTo(X(t),ey+eh);x.stroke();}x.setLineDash([]);
+  // annulus curve
+  const ay=180,ah=48,rel=p=>1+.06*Math.exp(-Math.pow((p-.32)/.17,2)),Ya=v=>ay+ah-(v-.99)/(1.07-.99)*ah;x.fillStyle=tok('--muted');x.fillText('Annulus area, relative (illustrative)',m,ay-14);
+  x.strokeStyle=tok('--line');x.beginPath();x.moveTo(m,Ya(1));x.lineTo(W-m,Ya(1));x.stroke();
+  x.strokeStyle=tok('--cyan');x.lineWidth=1.8;x.beginPath();for(let px=0;px<=W-2*m;px++){const t=t0+px/(W-2*m)*(t1-t0),p=((t%RR)+RR)%RR/RR,y=Ya(rel(p));px?x.lineTo(m+px,y):x.moveTo(m+px,y);}x.stroke();
+  x.fillStyle=tok('--accent');x.beginPath();x.arc(X(ph*RR),Ya(rel(ph)),4,0,7);x.fill();}
+ const expo=GT.mode==='retro'?(2*win+.2*(RR-2*win))/RR*100:(2*win)/RR*100;
+ $('#gStats').innerHTML=`<div class="stat"><span class="k">R–R interval</span><span class="v">${Math.round(RR)} <small>ms</small></span></div><div class="stat"><span class="k">Chosen phase</span><span class="v">${Math.round(ph*RR)} <small>ms after R</small></span></div><div class="stat"><span class="k">Quiet diastole</span><span class="v">${quiet>0?Math.round(quiet)+' <small>ms</small>':'<small>none at this rate</small>'}</span></div><div class="stat"><span class="k">Phase is in</span><span class="v" style="font-size:16px">${ph*RR<=QT?'systole':quiet>0&&ph*RR>=dStart&&ph*RR<=dEnd?'quiet diastole':'diastole (moving)'}</span></div><div class="stat"><span class="k">Exposure vs. full retro</span><span class="v">${Math.round(expo)} <small>%</small></span></div>`;}
+$('#gHr').addEventListener('input',gate);$('#gPh').addEventListener('input',gate);
+$$('#gMode button').forEach(b=>b.addEventListener('click',()=>{GT.mode=b.dataset.m;$$('#gMode button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));gate();}));
+
+/* ======================= CARDIAC: double oblique ======================= */
+const D={a0:18,b0:-12,h0:7,show:false,seed:3};
+const rad=d=>d*Math.PI/180;
+function R(a,b){const ca=Math.cos(a),sa=Math.sin(a),cb=Math.cos(b),sb=Math.sin(b);return v=>{const [x,y,z]=v,y1=y*cb-z*sb,z1=y*sb+z*cb;return[x*ca+z1*sa,y1,-x*sa+z1*ca];};}
+const add=(a,b,s=1)=>[a[0]+b[0]*s,a[1]+b[1]*s,a[2]+b[2]*s],dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const CUSP=[{n:'RCC',a:-90},{n:'LCC',a:30},{n:'NCC',a:150}];
+function anatomy(){const r=R(rad(D.a0),rad(D.b0)),n0=r([0,0,1]),u0=r([1,0,0]),v0=r([0,1,0]),c0=[0,0,D.h0];const ring=(ang,s,m)=>add(add(c0,add(u0,v0,0),0),add(add([0,0,0],u0,13.5*m*Math.cos(ang)),v0,11*m*Math.sin(ang)),1).map((q,i)=>q+n0[i]*s);
+ const hinges=CUSP.map(c=>({n:c.n,p:ring(rad(c.a),0,1)}));
+ const curves=CUSP.map(c=>{const pts=[];for(let t=-60;t<=60;t+=3){const s=17*(1-Math.cos(rad(1.5*t)));pts.push(ring(rad(c.a+t),s,1+.14*Math.sin(Math.PI*s/17)));}return pts;});
+ const rings=[-8,19].map(s=>{const pts=[];for(let t=0;t<=360;t+=8)pts.push(ring(rad(t),s,s>0?1.05:.95));return pts;});return{hinges,curves,rings,n0,c0};}
+function dob(){const A=+$('#dA').value,B=+$('#dB').value,Hh=+$('#dH').value;$('#dAO').textContent=A.toFixed(1)+'°';$('#dBO').textContent=B.toFixed(1)+'°';$('#dHO').textContent=Hh.toFixed(2)+' mm';
+ const an=anatomy(),r=R(rad(A),rad(B)),n=r([0,0,1]),U=r([1,0,0]),Vv=r([0,1,0]),c=[0,0,Hh];
+ const d=an.hinges.map(h=>({n:h.n,p:h.p,d:dot(add(h.p,c,-1),n)}));const ok=d.every(h=>Math.abs(h.d)<.75);
+ const col=v=>Math.abs(v)<.75?tok('--good'):Math.abs(v)<3?tok('--warn'):tok('--bad');
+ const side=(id,axis)=>{const cnv=$(id);if(!cnv.clientWidth)return;const {ctx:x,W}=prep(cnv);const s=W/56,ox=W/2,oy=W*.68,P=p=>[ox+(axis==='x'?p[0]:p[1])*s,oy-p[2]*s];
+  x.strokeStyle=tok('--line');x.lineWidth=1;for(let g=-24;g<=24;g+=8){x.beginPath();x.moveTo(ox+g*s,0);x.lineTo(ox+g*s,W);x.stroke();}
+  x.strokeStyle=tok('--muted');x.globalAlpha=.55;an.rings.forEach(rg=>{x.beginPath();rg.forEach((p,i)=>{const q=P(p);i?x.lineTo(q[0],q[1]):x.moveTo(q[0],q[1]);});x.stroke();});x.globalAlpha=1;
+  x.strokeStyle=tok('--ink');x.lineWidth=1.6;an.curves.forEach(cv_=>{x.beginPath();cv_.forEach((p,i)=>{const q=P(p);i?x.lineTo(q[0],q[1]):x.moveTo(q[0],q[1]);});x.stroke();});
+  const line=(nn,h,dash,color)=>{const k=axis==='x'?nn[0]/nn[2]:nn[1]/nn[2];x.strokeStyle=color;x.lineWidth=2;x.setLineDash(dash);x.beginPath();const a=-30,b=30;x.moveTo(ox+a*s,oy-(h-k*a)*s);x.lineTo(ox+b*s,oy-(h-k*b)*s);x.stroke();x.setLineDash([]);};
+  if(D.show)line(an.n0,D.h0,[6,4],tok('--good'));line(n,Hh,[],tok('--accent'));
+  x.font='600 11px "IBM Plex Mono", monospace';x.textAlign='center';d.forEach(h=>{const q=P(h.p);x.fillStyle=col(h.d);x.beginPath();x.arc(q[0],q[1],5,0,7);x.fill();x.fillStyle=tok('--ink');x.fillText(h.n,q[0],q[1]+(h.n==='RCC'?14:-14));});
+  x.fillStyle=tok('--muted');x.font='10.5px "IBM Plex Mono", monospace';x.textAlign='left';x.fillText(axis==='x'?'R':'A',6,W-8);x.textAlign='right';x.fillText(axis==='x'?'L':'P',W-6,W-8);};
+ side('#dobCor','x');side('#dobSag','y');
+ const en=$('#dobEn');if(en.clientWidth){const {ctx:x,W}=prep(en);const s=W/40,o=W/2,P=p=>{const q=add(p,c,-1);return[o+dot(q,U)*s,o+dot(q,Vv)*s];};
+  x.strokeStyle=tok('--line');x.beginPath();x.moveTo(o,0);x.lineTo(o,W);x.moveTo(0,o);x.lineTo(W,o);x.stroke();
+  x.fillStyle=tok('--muted');an.curves.forEach(cc=>{for(let i=0;i<cc.length-1;i++){const a=cc[i],b=cc[i+1],da=dot(add(a,c,-1),n),db=dot(add(b,c,-1),n);if(da*db<=0&&da!==db){const t=da/(da-db),p=add(a,add(b,a,-1),t),q=P(p);x.beginPath();x.arc(q[0],q[1],3,0,7);x.fill();}}});
+  const pts=d.map(h=>P(h.p));if(ok){const [A1,B1,C1]=pts,dd=2*(A1[0]*(B1[1]-C1[1])+B1[0]*(C1[1]-A1[1])+C1[0]*(A1[1]-B1[1]));if(Math.abs(dd)>1e-6){const sq=p=>p[0]*p[0]+p[1]*p[1],ux=(sq(A1)*(B1[1]-C1[1])+sq(B1)*(C1[1]-A1[1])+sq(C1)*(A1[1]-B1[1]))/dd,uy=(sq(A1)*(C1[0]-B1[0])+sq(B1)*(A1[0]-C1[0])+sq(C1)*(B1[0]-A1[0]))/dd;x.strokeStyle=tok('--good');x.setLineDash([5,4]);x.lineWidth=1.6;x.beginPath();x.arc(ux,uy,Math.hypot(A1[0]-ux,A1[1]-uy),0,7);x.stroke();x.setLineDash([]);}}
+  x.font='600 11px "IBM Plex Mono", monospace';x.textAlign='center';d.forEach((h,i)=>{const q=pts[i];x.fillStyle=col(h.d);x.beginPath();x.arc(q[0],q[1],6,0,7);x.fill();x.fillStyle=tok('--ink');x.fillText(`${h.n} ${h.d>=0?'+':''}${h.d.toFixed(1)}`,q[0],q[1]+(q[1]<o?-16:18));});
+  x.fillStyle=tok('--muted');x.font='10.5px "IBM Plex Mono", monospace';x.textAlign='left';x.fillText('dots: sinus wall cut by your plane',6,W-8);}
+ $('#dobRead').innerHTML=d.map(h=>`<span class="chip ${Math.abs(h.d)<.75?'good':Math.abs(h.d)<3?'warn':'bad'}">${h.n} ${h.d>=0?'+':''}${h.d.toFixed(1)} mm</span>`).join('')+(ok?'<span class="chip good">Aligned: this plane is the virtual basal ring</span>':'<span class="chip neutral">+ above your plane · − below</span>')+(D.show?`<span class="chip neutral">Answer: coronal ${D.a0.toFixed(1)}°, sagittal ${D.b0.toFixed(1)}°, height ${D.h0.toFixed(2)} mm</span>`:'');}
+['#dA','#dB','#dH'].forEach(s=>$(s).addEventListener('input',dob));
+$('#dobShow').onclick=()=>{D.show=!D.show;$('#dobShow').textContent=D.show?'Hide answer':'Show answer';dob();};
+$('#dobNew').onclick=()=>{const r=rng(++D.seed*7919);const sg=()=>r()<.5?-1:1;D.a0=Math.round(sg()*(8+r()*16)*2)/2;D.b0=Math.round(sg()*(6+r()*14)*2)/2;D.h0=Math.round((4+r()*7)*4)/4;D.show=false;$('#dobShow').textContent='Show answer';$('#dA').value=0;$('#dB').value=0;$('#dH').value=2;dob();};
+
+/* ======================= CARDIAC: annulus ======================= */
+function annulus(){let M=+$('#aMaj').value,m=+$('#aMin').value;if(m>M){m=M;$('#aMin').value=m;}$('#aMajO').textContent=M.toFixed(1)+' mm';$('#aMinO').textContent=m.toFixed(1)+' mm';
+ const a=M/2,b=m/2,A=Math.PI*a*b,P=Math.PI*(3*(a+b)-Math.sqrt((3*a+b)*(a+3*b))),dA=2*Math.sqrt(A/Math.PI),dP=P/Math.PI,ecc=1-m/M;
+ const s=7,c=130;$('#annSvg').innerHTML=`<rect x="0" y="0" width="260" height="260" rx="10" fill="var(--sunk)"/>
+ <ellipse cx="${c}" cy="${c}" rx="${a*s}" ry="${b*s}" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2.2"/>
+ <circle cx="${c}" cy="${c}" r="${dA/2*s}" fill="none" stroke="var(--cyan)" stroke-width="1.6" stroke-dasharray="5 4"/>
+ <circle cx="${c}" cy="${c}" r="${dP/2*s}" fill="none" stroke="var(--ink)" stroke-width="1.2" stroke-dasharray="2 4"/>
+ <line x1="${c-a*s}" y1="${c}" x2="${c+a*s}" y2="${c}" stroke="var(--muted)" stroke-width="1"/><line x1="${c}" y1="${c-b*s}" x2="${c}" y2="${c+b*s}" stroke="var(--muted)" stroke-width="1"/>
+ <text x="12" y="20" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--accent)">traced annulus</text>
+ <text x="12" y="36" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--cyan)">area-derived circle</text>
+ <text x="12" y="52" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--ink)">perimeter-derived circle</text>
+ <text x="${c}" y="250" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--muted)">en face, systolic phase</text>`;
+ $('#aStats').innerHTML=[['Area',fmt(A,0),'mm²'],['Perimeter',fmt(P),'mm'],['Mean diameter',fmt((M+m)/2),'mm'],['Area-derived Ø',fmt(dA),'mm'],['Perimeter-derived Ø',fmt(dP),'mm'],['Eccentricity index',fmt(ecc,2),'']].map(([k,v,u])=>`<div class="stat"><span class="k">${k}</span><span class="v">${v} <small>${u}</small></span></div>`).join('');}
+['#aMaj','#aMin'].forEach(s=>$(s).addEventListener('input',annulus));
+function root(){const lm=+$('#rLm').value,rc=+$('#rRca').value,sov=+$('#rSov').value;const chip=(n,h)=>{if(!(h>0))return`<span class="chip neutral">${n}: enter a value</span>`;const c=h<10?'bad':h<12?'warn':'good';return`<span class="chip ${c}">${n} ${fmt(h)} mm · ${h<10?'low':h<12?'borderline':'adequate'}</span>`;};
+ const narrow=sov>0&&sov<30,low=Math.min(lm||99,rc||99)<12;
+ $('#rOut').innerHTML=chip('LM',lm)+chip('RCA',rc)+(sov>0?`<span class="chip ${narrow?'warn':'good'}">SOV ${fmt(sov)} mm · ${narrow?'narrow':'not narrow'}</span>`:'')+`<span class="chip ${low&&narrow?'bad':low||narrow?'warn':'good'}">${low&&narrow?'Higher-risk profile for coronary obstruction: review leaflet length and calcium with the team':low||narrow?'One risk feature present: look closely at leaflet bulk and sinus height':'No height or sinus flag on these numbers'}</span>`;}
+['#rLm','#rRca','#rSov'].forEach(s=>$(s).addEventListener('input',root));
+
+/* ======================= ACCESS ======================= */
+const MODS=['Circumferential or horseshoe calcium at the narrowest point','Severe tortuosity that will not straighten (calcified bends)','Calcium on the anterior wall at the planned puncture site','High femoral bifurcation (short common femoral segment)','Prior iliac stent, graft or vascular surgery on this side'];
+$('#mods').innerHTML=MODS.map((m,i)=>`<label class="chk" style="color:var(--ink)"><input type="checkbox" id="mod${i}"> ${m}</label>`).join('');
+$$('#mods input').forEach(c=>c.addEventListener('change',sfar));
+$('#shVal').addEventListener('input',sfar);$('#mldR').addEventListener('input',sfar);$('#mldL').addEventListener('input',sfar);
+$('#shUnit').addEventListener('change',()=>{const v=+$('#shVal').value;$('#shVal').value=$('#shUnit').value==='mm'?fmt(v/3,2):fmt(v*3,1);sfar();});
+function sfar(){const raw=+$('#shVal').value,od=$('#shUnit').value==='fr'?raw/3:raw;$('#frNote').textContent=$('#shUnit').value==='fr'?`${fmt(raw,1)} Fr ÷ 3 = ${fmt(od,2)} mm.`:`${fmt(od,2)} mm × 3 = ${fmt(od*3,1)} Fr.`;
+ const side=(n,mld)=>{if(!(mld>0)||!(od>0))return`<div class="side-card"><b>${n}</b><span class="chip neutral">Enter a diameter</span></div>`;const r=od/mld,cls=r>=1.05?'bad':r>1?'warn':'good',sc=10,max=Math.max(od,mld),k=60/max;
+  return`<div class="side-card"><b>${n}</b><svg viewBox="0 0 150 150" role="img" aria-label="${n}: sheath ${fmt(od)} mm vs lumen ${fmt(mld)} mm"><rect width="150" height="150" rx="8" fill="var(--sunk)"/><circle cx="75" cy="75" r="${mld/2*k}" fill="var(--cyan-soft)" stroke="var(--cyan)" stroke-width="2"/><circle cx="75" cy="75" r="${od/2*k}" fill="none" stroke="var(--accent)" stroke-width="2.4" stroke-dasharray="${r>=1.05?'0':'5 3'}"/></svg>
+  <span class="mono" style="font-size:22px">SFAR ${fmt(r,2)}</span><span class="chip ${cls}">${r>=1.05?'At or above 1.05: linked to more major vascular complications':r>1?'Sheath slightly larger than lumen: borderline':'Sheath smaller than the lumen'}</span><span style="font-size:13px;color:var(--muted)">Lumen ${fmt(mld)} mm (cyan) · sheath ${fmt(od,2)} mm (amber)</span></div>`;};
+ $('#sfarOut').innerHTML=side('Right iliofemoral',+$('#mldR').value)+side('Left iliofemoral',+$('#mldL').value);
+ const nm=$$('#mods input').filter(c=>c.checked).length;$('#modOut').innerHTML=nm?`<span class="chip ${nm>1?'bad':'warn'}">${nm} modifier${nm>1?'s':''} checked: treat a borderline ratio as unfavorable and discuss the other side or alternative access with the team.</span>`:'<span class="chip neutral">No modifiers checked</span>';}
+
+/* ======================= QUIZ ======================= */
+const Q=[
+{q:'On a standard axial CT image, where is the patient\'s right side?',o:['On the image right','On the image left','At the top of the image','It depends on the scanner'],a:1,e:'Axial images are viewed as if standing at the patient\'s feet, so patient right is on image left. That is why the liver appears on the left of the screen.'},
+{q:'On a well-timed TAVR CTA, what HU would you expect inside the aortic lumen?',o:['About 40 HU','About 300–450 HU','About −100 HU','Over 1500 HU'],a:1,e:'Iodinated contrast raises blood from about 40 HU to several hundred. Calcium usually reads higher still, and fat is negative.'},
+{q:'You are measuring the minimal lumen of a heavily calcified external iliac. Which window gives the most faithful lumen?',o:['A narrow window centered on soft tissue','A wide window with a raised level','The lung window','Window does not affect measurements'],a:1,e:'With a narrow window, blurred calcium saturates to white and spills into the lumen (blooming), so the lumen looks smaller. A wide window with a raised level puts the visible edge near the true boundary.'},
+{q:'At which part of the cardiac cycle is the aortic annulus usually measured for TAVR?',o:['Systole, around 30–40% of the R–R interval','End-diastole, around 95%','Mid-diastole, around 75%','Phase does not matter'],a:0,e:'The annulus is typically a few percent larger in systole. Measuring in diastole risks undersizing.'},
+{q:'An expandable sheath has a maximal outer diameter of 7.3 mm. The smallest iliofemoral lumen is 6.5 mm. What is the SFAR and what does it suggest?',o:['0.89: comfortable fit','1.12: above the 1.05 threshold linked to more vascular complications','1.12: no concern if the vessel is calcified','0.89: alternative access required'],a:1,e:'7.3 ÷ 6.5 = 1.12. A ratio of 1.05 or more has been associated with more major vascular complications, and calcium makes it worse because the vessel cannot stretch.'},
+{q:'For an elliptical annulus, how do the perimeter-derived and area-derived diameters compare?',o:['They are always equal','Perimeter-derived is larger','Area-derived is larger','It depends on calcium'],a:1,e:'For any non-circular outline the perimeter-derived diameter exceeds the area-derived one, and the gap grows with eccentricity. That is one reason sizing charts specify which measure to use.'},
+{q:'Where is the preferred transfemoral puncture site?',o:['External iliac artery above the inguinal ligament','Common femoral artery over the femoral head, above the bifurcation, with a calcium-free anterior wall','Superficial femoral artery below the bifurcation','Wherever the artery is largest'],a:1,e:'Too high risks retroperitoneal bleeding that is hard to compress; too low (SFA or profunda) risks pseudoaneurysm and occlusion. The femoral head gives a firm backstop for compression.'},
+{q:'Which combination most raises concern for coronary obstruction during TAVR?',o:['Coronary height 16 mm with sinuses 34 mm','Coronary height 9 mm with sinuses 28 mm','Coronary height 14 mm with a dilated ascending aorta','A tricuspid valve with mild calcium'],a:1,e:'Low coronary ostia (under about 10–12 mm) with narrow sinuses (under about 30 mm) leave little room for displaced leaflets. Bulky leaflets and valve-in-valve cases add risk.'}
+];
+const QS={ans:{}};
+function quiz(){$('#quiz').innerHTML=Q.map((x,i)=>{const a=QS.ans[i];return`<div class="q"><span class="n">Question ${i+1} of ${Q.length}</span><h3>${x.q}</h3><div class="opts">${x.o.map((o,j)=>`<button type="button" data-q="${i}" data-o="${j}" ${a!==undefined?'disabled':''} class="${a!==undefined?(j===x.a?'right':j===a?'wrong':''):''}">${o}</button>`).join('')}</div>${a!==undefined?`<p class="expl"><b style="color:${a===x.a?'var(--good)':'var(--bad)'}">${a===x.a?'Correct.':'Not quite.'}</b> ${x.e}</p>`:''}</div>`;}).join('');
+ const n=Object.keys(QS.ans).length,c=Object.entries(QS.ans).filter(([i,a])=>Q[i].a===a).length;$('#qScore').textContent=n?`Score: ${c} of ${n} answered.`:'';
+ $$('#quiz button').forEach(b=>b.addEventListener('click',()=>{QS.ans[+b.dataset.q]=+b.dataset.o;quiz();}));}
+$('#qReset').onclick=()=>{QS.ans={};quiz();};
+
+/* ======================= ROUTING & THEME ======================= */
+const VIEWS=['scan','mpr','basics','cardiac','access','quiz'];
+function route(){let h=(location.hash||'').slice(1);if(!VIEWS.includes(h))h='scan';VIEWS.forEach(v=>{$('#view-'+v).hidden=v!==h;});$$('.tabs a').forEach(a=>a.setAttribute('aria-current',a.getAttribute('href')==='#'+h?'page':'false'));redraw(h);}
+function redraw(h){h=h||VIEWS.find(v=>!$('#view-'+v).hidden);if(h==='scan'){req();drawWinMap();drawScout();}if(h==='mpr'){mprReq(true);}if(h==='basics'){swatches();bloom();}if(h==='cardiac'){gate();dob();annulus();root();}if(h==='access')sfar();if(h==='quiz')quiz();}
+window.addEventListener('hashchange',route);
+let rz=0;window.addEventListener('resize',()=>{cancelAnimationFrame(rz);rz=requestAnimationFrame(()=>redraw());});
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>redraw());}catch(e){}
+new MutationObserver(()=>redraw()).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+
+// boot
+goStop(5);setWin(200,700);readout();annulus();root();sfar();quiz();swatches();
+route();
+loadVolume();
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>redraw());
+})();
+</script>
+
+</body>
+</html>
