@@ -853,11 +853,11 @@ const FOVB=260,deg=r=>r*180/Math.PI;
    fitted to this patient's own sinus walls and coronary ostia sharpened where the scan shows them. Its geometry is therefore known exactly.
    "cta" is the real body CTA; its reference plane is fitted to the dataset's automatic annulus label (approximate). */
 const CASES={
- root:{key:'root',name:'Root reconstruction · 0.5 mm',sh:[220,220,220],vs:.5,zoom:2.6,exact:true,
-  files:[[0,64,3489980],[64,128,3272332],[128,192,3228073],[192,220,1300582]].map((c,i)=>({file:`data/root_${String(i).padStart(2,'0')}.png`,z0:c[0],z1:c[1],bytes:c[2]})),
-  ref:{c:[59.54,55.68,58.97],n:V3.norm([0.8384,0.1341,0.5283])},
-  truth:{max:27.6,min:22.0,area:477,per:78.2,LM:9.9,RCA:17.1},
-  labels:{1:{n:'Aorta (auto label)',c:[235,90,80]},2:{n:'Aortic root (auto label)',c:[245,165,60]},3:{n:'Aortic valve cusp (modelled)',c:[250,225,80]},4:{n:'Left ventricle (auto label)',c:[230,120,180]},5:{n:'Aortic annulus (auto label)',c:[80,210,230]},8:{n:'Left main / LAD / LCx',c:[120,220,140]},9:{n:'Right coronary artery',c:[110,150,245]},10:{n:'Leaflet calcium (modelled)',c:[255,255,255]}},
+ root:{key:'root',name:'Root reconstruction · 0.5 mm',sh:[240,240,240],vs:.5,zoom:2.6,exact:true,fb:[135.262,80.423,188.204],
+  files:[[0,64,4312898],[64,128,4172687],[128,192,4085562],[192,240,2912983]].map((c,i)=>({file:`data/root_${String(i).padStart(2,'0')}.png`,z0:c[0],z1:c[1],bytes:c[2]})),
+  ref:{c:[70.98,61.77,68.62],n:V3.norm([0.8384,0.1341,0.5283])},
+  truth:{max:28.4,min:24.4,area:545,per:83.1,LM:10.0,RCA:17.1},
+  labels:Object.assign({},LABELS,{1:{n:'Ascending aorta',c:[235,90,80]},2:{n:'Aortic root (sinuses of Valsalva)',c:[245,165,60]},3:{n:'Aortic valve cusp (modelled)',c:[250,225,80]},4:{n:'Left ventricle',c:[90,215,140]},5:{n:'Virtual basal ring (annulus)',c:[80,210,230]},7:{n:'LV outflow tract',c:[120,200,230]},8:{n:'Left main / LAD / LCx',c:[120,220,140]},9:{n:'Right coronary artery',c:[110,150,245]},10:{n:'Calcium (modelled)',c:[255,255,255]}}),
   vol:null,lab:null,ready:false},
  cta:{key:'cta',name:'Body CTA · 1.5 mm',sh:SH,vs:VS,zoom:2,exact:false,
   ref:{c:[207.0,142.3,255.6],n:V3.norm([0.838,0.134,0.528])},
@@ -908,11 +908,22 @@ function orthoFix(){let[e1,,e3]=M.E;e3=V3.norm(e3);e1=V3.norm(V3.add(e1,e3,-V3.d
  for(const id in M.P){const P=M.P[id],n=nOf(id);P.u=V3.norm(V3.add(P.u,n,-V3.dot(P.u,n)));let v=V3.add(P.v,n,-V3.dot(P.v,n));v=V3.add(v,P.u,-V3.dot(v,P.u));P.v=V3.norm(v);}}
 function rotatePane(id,dt){const P=M.P[id],k=V3.norm(V3.cross(P.u,P.v));M.E=M.E.map(e=>V3.rot(e,k,dt));
  for(const q in M.P){if(q===id)continue;const Q=M.P[q];Q.u=V3.rot(Q.u,k,dt);Q.v=V3.rot(Q.v,k,dt);Q.vc=V3.add(M.c,V3.rot(V3.add(Q.vc,M.c,-1),k,dt));}orthoFix();reproj();}
-function samp(x,y,z){const fx=x/MVS-.5,fy=y/MVS-.5,fz=z/MVS-.5,x0=Math.floor(fx),y0=Math.floor(fy),z0=Math.floor(fz),X=MSH[2];
+function sampCTA(x,y,z){const fx=x/VS-.5,fy=y/VS-.5,fz=z/VS-.5,x0=Math.floor(fx),y0=Math.floor(fy),z0=Math.floor(fz),Xn=SH[2];
+ if(x0<0||y0<0||z0<0||x0>=Xn-1||y0>=SH[1]-1||z0>=SH[0]-1||!ZOK[z0]||!ZOK[z0+1])return -1024;
+ const tx=fx-x0,ty=fy-y0,tz=fz-z0,i=z0*PLANE+y0*Xn+x0,j=i+PLANE;
+ const a=VOL[i]+(VOL[i+1]-VOL[i])*tx,b=VOL[i+Xn]+(VOL[i+Xn+1]-VOL[i+Xn])*tx,c=VOL[j]+(VOL[j+1]-VOL[j])*tx,d=VOL[j+Xn]+(VOL[j+Xn+1]-VOL[j+Xn])*tx,e=a+(b-a)*ty;return e+(c+(d-c)*ty-e)*tz;}
+function samp(x,y,z){const fb=M.cs.fb;
+ if(fb){const ex=MSH[2]*MVS,ey=MSH[1]*MVS,ez=MSH[0]*MVS,dm=Math.min(x,ex-x,y,ey-y,z,ez-z);
+  if(dm<4){const ct=sampCTA(x+fb[0],y+fb[1],z+fb[2]);if(dm<=MVS*1.5)return ct;const w=(dm-MVS*1.5)/(4-MVS*1.5);return w*sampIn(x,y,z)+(1-w)*ct;}}
+ return sampIn(x,y,z);}
+function sampIn(x,y,z){const fx=x/MVS-.5,fy=y/MVS-.5,fz=z/MVS-.5,x0=Math.floor(fx),y0=Math.floor(fy),z0=Math.floor(fz),X=MSH[2];
  if(x0<0||y0<0||z0<0||x0>=X-1||y0>=MSH[1]-1||z0>=MSH[0]-1)return -1024;
  const tx=fx-x0,ty=fy-y0,tz=fz-z0,i=z0*MPL+y0*X+x0,j=i+MPL;
  const a=MV[i]+(MV[i+1]-MV[i])*tx,b=MV[i+X]+(MV[i+X+1]-MV[i+X])*tx,c=MV[j]+(MV[j+1]-MV[j])*tx,d=MV[j+X]+(MV[j+X+1]-MV[j+X])*tx,e=a+(b-a)*ty;return e+(c+(d-c)*ty-e)*tz;}
-function labAt(x,y,z){const ix=Math.round(x/MVS-.5),iy=Math.round(y/MVS-.5),iz=Math.round(z/MVS-.5);if(ix<0||iy<0||iz<0||ix>=MSH[2]||iy>=MSH[1]||iz>=MSH[0])return 0;return ML[iz*MPL+iy*MSH[2]+ix];}
+function labAt(x,y,z){const ix=Math.round(x/MVS-.5),iy=Math.round(y/MVS-.5),iz=Math.round(z/MVS-.5);
+ if(ix<0||iy<0||iz<0||ix>=MSH[2]||iy>=MSH[1]||iz>=MSH[0]){const fb=M.cs.fb;if(!fb)return 0;const jx=Math.round((x+fb[0])/VS-.5),jy=Math.round((y+fb[1])/VS-.5),jz=Math.round((z+fb[2])/VS-.5);
+  if(jx<0||jy<0||jz<0||jx>=SH[2]||jy>=SH[1]||jz>=SH[0]||!ZOK[jz])return 0;return LAB[jz*PLANE+jy*SH[2]+jx];}
+ return ML[iz*MPL+iy*MSH[2]+ix];}
 const MOFF={};
 function paneW(id){return $('#mpr'+id).clientWidth;}
 function w2s(id,p){const W=paneW(id),P=M.P[id],k=W/(FOVB/M.zoom),q=V3.add(p,P.vc,-1);return[W/2+V3.dot(q,P.u)*k,W/2+V3.dot(q,P.v)*k];}
@@ -967,19 +978,19 @@ function drawArm(){
 }
 let mraf=0,mlow=false;
 function mprReq(full){if(full===true)mlow=false;if(!mraf)mraf=requestAnimationFrame(()=>{mraf=0;$('#mZoomLbl').textContent=fmt(M.zoom)+'×';if($('#view-mpr').hidden)return;['A','B','C'].forEach(id=>renderPane(id,mlow&&!!M.drag));drawArm();exFeedback();});}
-function mprReady(key){CASES[key].ready=true;if(M.cs.key===key){useCase(M.cs);M.ready=true;$('#mprLoading').hidden=true;mprReq(true);}}
+function mprReady(key){CASES[key].ready=true;if(M.cs.key===key){useCase(M.cs);M.ready=true;$('#mprLoading').hidden=true;mprReq(true);}else if(key==='cta'&&M.cs.fb&&M.ready)mprReq(true);}
 async function loadRootCase(){const cs=CASES.root,[Z,Y,X]=cs.sh,PL_=Y*X;cs.vol=new Int16Array(Z*PL_);cs.lab=new Uint8Array(Z*PL_);
  try{await Promise.all(cs.files.map(async c=>{const r=await fetch(c.file);if(!r.ok)throw new Error(`${c.file}: HTTP ${r.status}`);const bmp=await createImageBitmap(await r.blob(),{colorSpaceConversion:'none',premultiplyAlpha:'none'});
    const cn=document.createElement('canvas');cn.width=bmp.width;cn.height=bmp.height;const cx=cn.getContext('2d',{willReadFrequently:true});cx.drawImage(bmp,0,0);const d=cx.getImageData(0,0,bmp.width,bmp.height).data,n=(c.z1-c.z0)*PL_,base=c.z0*PL_;
    for(let k=0,p=0;k<n;k++,p+=4){cs.vol[base+k]=((d[p]<<8)|d[p+1])-1024;cs.lab[base+k]=d[p+2];}}));
-  const rr=rng(4242);for(let i=0;i<cs.vol.length;i+=2){const u=rr()||1e-9,w=rr(),m=Math.sqrt(-2*Math.log(u))*7;cs.vol[i]+=Math.round(m*Math.cos(6.2832*w));if(i+1<cs.vol.length)cs.vol[i+1]+=Math.round(m*Math.sin(6.2832*w));}
+  const rr=rng(4242);for(let i=0;i<cs.vol.length;i+=2){const u=rr()||1e-9,w=rr(),m=Math.sqrt(-2*Math.log(u))*0;cs.vol[i]+=Math.round(m*Math.cos(6.2832*w));if(i+1<cs.vol.length)cs.vol[i+1]+=Math.round(m*Math.sin(6.2832*w));}
   mprReady('root');}
  catch(e){if(M.cs.key==='root')$('#mprLoadMsg').textContent='Could not load the root reconstruction ('+e.message+'). Reload the page to try again.';}}
 function switchCase(key){const cs=CASES[key];M.cs=cs;cs.lab=key==='cta'?LAB:cs.lab;$$('#mCase button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.case===key)));
  M.meas=[];M.last=null;M.checked=false;M.marks={};M.ex=Math.min(M.ex,EXS().length-1);
  $('#exList').innerHTML=EXS().map((e,i)=>`<li><button type="button"><span class="n">${String(i+1).padStart(2,'0')}</span><span>${e.t}</span></button></li>`).join('');
  $$('#exList button').forEach((b,i)=>b.addEventListener('click',()=>{M.ex=i;exCard();}));
- $('#caseNote').innerHTML=key==='root'?'<b>Root reconstruction.</b> The same patient\'s real aortic root, resampled to 0.5 mm and sharpened. The real scan cannot show the cusps, so they are modelled and fitted to this patient\'s own sinus walls. Root, sinus and STJ borders are rebuilt from this patient\'s measured lumen surface, the basal ring is the ellipse fitted to the real annulus, and the proximal coronaries follow this patient\'s epicardial fat planes. Every answer is known exactly.':'<b>Real body CTA.</b> Public dataset at 1.5 mm, probably not ECG-gated. The answer plane is fitted to the dataset\'s automatic annulus label, so treat it as approximate.';
+ $('#caseNote').innerHTML=key==='root'?'<b>Root reconstruction.</b> This patient\'s real LVOT, aortic root and ascending aorta rebuilt at 0.5 mm along the vessel\'s own curved centerline, with the surrounding septum, atria, RVOT and fat brought in to meet a crisp lumen edge. The basal ring is the ellipse fitted to the real annulus. The real scan cannot show the cusps, so thickened, calcified severe-AS cusps are modelled on this patient\'s sinus walls, and the proximal coronaries follow this patient\'s epicardial fat planes. Beyond the 12 cm box the original 1.5 mm scan fills the view. Every answer is known exactly.':'<b>Real body CTA.</b> Public dataset at 1.5 mm, probably not ECG-gated. The answer plane is fitted to the dataset\'s automatic annulus label, so treat it as approximate.';
  const ready=cs.ready;M.ready=ready;if(ready)useCase(cs);$('#mprLoading').hidden=ready;if(!ready)$('#mprLoadMsg').textContent=key==='cta'?'Loading the body CTA':'Loading the root reconstruction';
  setFrame(frameFrom([0,0,1]),cs.ref.c,cs.zoom);exCard();mReadout();}
 

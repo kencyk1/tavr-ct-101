@@ -29,7 +29,7 @@ python3 -m http.server 8000
 ```
 index.html                 the whole app (HTML, CSS and JavaScript in one file)
 data/ct_00..08.png         body CTA, 517 slices at 1.5 mm, plus organ labels
-data/root_00..03.png       aortic root reconstruction at 0.5 mm, plus labels
+data/root_00..03.png       aortic root reconstruction (240³ at 0.5 mm), plus labels
 tools/organ_labels/        scripts that produced the organ labels
 tools/root_reconstruction/ scripts that produced the 0.5 mm root case
 ```
@@ -40,7 +40,7 @@ The PNG files are lossless containers, not pictures. In each pixel, red and gree
 
 - **Body CTA:** case ct1349 from the TAVRP-PL dataset, which is derived from the TotalSegmentator dataset. It was cropped, re-oriented and compressed for the web. It is probably not ECG-gated.
 - **Organ labels:** automatic segmentation with TotalSegmentator. The pulmonary trunk was relabeled from "heart" to "pulmonary artery". Heart chambers were split from TotalSegmentator's single heart label: contrast-based region growing from the pulmonary veins, SVC/IVC and pulmonary artery, and an anatomical RA/RV split along the SVC–IVC and pulmonary valve–RV apex axes. Valve planes are approximate chamber boundaries. Labels may be imperfect at organ edges.
-- **Root reconstruction (MPR lab):** this patient's real aortic root, resampled to 0.5 mm. The real scan cannot show the cusps, so they are modelled and fitted to the patient's own sinus walls. Root, sinus and STJ borders are rebuilt from the measured lumen surface. The basal ring is an ellipse fitted to the real annulus, and the proximal coronaries are routed through the patient's epicardial fat planes. This makes every answer key exact.
+- **Root reconstruction (MPR lab):** this patient's real LVOT, aortic root and ascending aorta rebuilt in a 12 cm box at 0.5 mm. The rebuild follows the vessel's own curved centerline, with fine thin-slice grain, and the surrounding septum, atria, RVOT and fat are brought in to meet a crisp lumen edge. The basal ring is an ellipse fitted to the real annulus. The real scan cannot show the cusps, so thickened, calcified severe-AS cusps are modelled on the patient's own sinus walls, with hinge-point and LVOT calcium. The proximal coronaries are routed through the patient's epicardial fat planes. Beyond the box, the original 1.5 mm scan fills the view. This makes every answer key exact.
 
 **For education only. Not for clinical decision-making.** Size devices from the manufacturer's instructions for use.
 
