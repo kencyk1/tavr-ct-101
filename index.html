@@ -349,7 +349,8 @@ footer a{color:var(--ink)}
           <button type="button" id="mZoomIn" aria-label="Zoom in">+</button>
         </div>
         <button type="button" class="btn" id="mReset">Square up planes</button>
-        <div class="seg" id="mTHV" aria-label="Virtual valve overlay" title="Overlay a schematic virtual transcatheter valve on the reference plane"><button type="button" data-thv="off" aria-pressed="true">No valve</button><button type="button" data-thv="bev" aria-pressed="false">BEV 23</button><button type="button" data-thv="sev" aria-pressed="false">SEV 23</button></div>
+        <div class="seg" id="mTHV" aria-label="Virtual valve overlay" title="Overlay a schematic virtual transcatheter valve on the reference plane"><button type="button" data-thv="off" aria-pressed="true">No valve</button><button type="button" data-thv="bev" aria-pressed="false">BEV</button><button type="button" data-thv="sev" aria-pressed="false">SEV</button></div>
+        <label class="chk" for="mTHVSize">Size <select id="mTHVSize" disabled aria-label="Virtual valve size"></select></label>
         <span class="spacer"></span>
         <label class="chk"><input type="checkbox" id="mLbl"> Color labels</label>
       </div>
@@ -856,7 +857,7 @@ const FOVB=260,deg=r=>r*180/Math.PI;
    to 0.5 mm, with the same patient's 1.5 mm scan around it. Nothing is modelled; each answer key was measured on its scan.
    "cta" is the real body CTA (a different patient); its reference plane is fitted to the dataset's automatic annulus label (approximate). */
 const CASES={
- root:{key:'root',name:'Gated root 1 · 0.5 mm',loadMsg:'Loading gated root 1',
+ root:{key:'root',name:'Gated root 1 · 0.5 mm',thvRec:{bev:26,sev:34},loadMsg:'Loading gated root 1',
   note:'<b>Gated root 1.</b> A real ECG-gated TAVR planning CT from a public dataset (case s1230; a different patient from the body tour). The 12 cm box around the root is resampled from 1.5 mm to 0.5 mm; nothing is drawn in. The cusps, their calcium and both coronary ostia are this patient\'s own, and the same 1.5 mm scan fills the view beyond the box. The answer key was measured on this scan with the annulus at the three cusp nadirs. Look for two teaching points: a low left main and a high RCA take-off near the sinotubular junction.',sh:[240,240,240],vs:.5,zoom:2.6,exact:true,
   files:[[0,64,4424206],[64,128,4398372],[128,192,4384968],[192,240,3187757]].map((c,i)=>({file:`data/root_${String(i).padStart(2,'0')}.png`,z0:c[0],z1:c[1],bytes:c[2]})),
   fbv:{sh:[174,174,175],vs:1.5,off:[71.333,70.775,70.755],files:[[0,64,2663202],[64,128,2760912],[128,174,1909187]].map((c,i)=>({file:`data/rootfb_${String(i).padStart(2,'0')}.png`,z0:c[0],z1:c[1],bytes:c[2]}))},
@@ -864,14 +865,14 @@ const CASES={
   truth:{max:30.3,min:22.7,area:540,per:84.7,LM:6.0,RCA:26.0},
   labels:Object.assign({},LABELS,{1:{n:'Ascending aorta',c:[235,90,80]},2:{n:'Aortic root (sinuses of Valsalva)',c:[245,165,60]},3:{n:'Aortic valve cusp',c:[250,225,80]},4:{n:'Left ventricle',c:[90,215,140]},5:{n:'Virtual basal ring (annulus)',c:[80,210,230]},7:{n:'LV outflow tract',c:[120,200,230]},8:{n:'Left main / LAD / LCx',c:[120,220,140]},9:{n:'Right coronary artery',c:[110,150,245]},10:{n:'Calcium',c:[255,255,255]}}),
   vol:null,lab:null,fbVol:null,fbLab:null,ready:false},
- root2:{key:'root2',name:'Gated root 2 · 0.5 mm',loadMsg:'Loading gated root 2',sh:[240,240,240],vs:.5,zoom:2.6,exact:true,
+ root2:{key:'root2',name:'Gated root 2 · 0.5 mm',thvRec:{bev:26,sev:29},loadMsg:'Loading gated root 2',sh:[240,240,240],vs:.5,zoom:2.6,exact:true,
   note:'<b>Gated root 2.</b> A second real ECG-gated TAVR planning CT (case s1105, another patient), prepared the same way: 0.5 mm box around the root, nothing drawn in, the same 1.5 mm scan beyond it. Practice points: a small, oval annulus; bulky calcium at the left-coronary hinge that runs into the LVOT (trace the annulus smoothly as if the calcium were not there); a short root with the sinotubular junction about 18 mm above the annulus; and the left main at about 8 mm.',
   files:[[0,64,4330870],[64,128,4319618],[128,192,4179021],[192,240,2999580]].map((c,i)=>({file:`data/root2_${String(i).padStart(2,'0')}.png`,z0:c[0],z1:c[1],bytes:c[2]})),
   fbv:{sh:[174,175,174],vs:1.5,off:[70.736,71.027,70.587],files:[[0,64,2424432],[64,128,2513414],[128,174,1681867]].map((c,i)=>({file:`data/root2fb_${String(i).padStart(2,'0')}.png`,z0:c[0],z1:c[1],bytes:c[2]}))},
   ref:{c:[69.71,62.13,70.07],n:V3.norm([0.6837,0.2902,0.6696])},
   truth:{max:27.6,min:20.3,area:439,per:76.8,LM:8.0,RCA:15.5},
   labels:null,vol:null,lab:null,fbVol:null,fbLab:null,ready:false},
- root3:{key:'root3',name:'Root 3 · valve-in-valve',win:'wide',loadMsg:'Loading root 3 (valve-in-valve)',sh:[240,240,240],vs:.5,zoom:2.6,exact:true,
+ root3:{key:'root3',name:'Root 3 · valve-in-valve',win:'wide',viv:true,thvRec:{bev:23,sev:23},loadMsg:'Loading root 3 (valve-in-valve)',sh:[240,240,240],vs:.5,zoom:2.6,exact:true,
   note:'<b>Root 3 · valve-in-valve.</b> A real cardiac CT (heart and thoracic aorta protocol, case s0972) of a patient with a stented surgical bioprosthesis in the aortic position: a metal frame with three stent posts on a sewing ring, with the prosthetic leaflets visible inside. Prepared like the other cases (0.5 mm box, nothing drawn in). The dataset does not name the valve model, so frame sizes come from the CT, not from a manufacturer chart. Practise the valve-in-valve steps: plane at the sewing ring, the frame\'s inner diameter, post height, and coronary height and valve-to-coronary distance.',
   hints:{'Find the annular plane':'In this case the reference plane is the <b>inflow of the surgical valve</b>. Tilt the planes until the metal sewing ring shows as a full, even circle, then scroll down to its lowest edge. The cusps here are the prosthetic leaflets.','Measure the annulus':'Measure the <b>inner edge of the metal ring</b> where it forms a complete circle, 1–3 mm above its lowest edge. This is the CT inner diameter of the frame. Metal blooms on CT, so it reads a little smaller than the manufacturer\'s true inner diameter.','Measure coronary heights':'Heights are measured from the inflow plane. Note whether each ostium sits below or above the tips of the stent posts; the next exercise measures the valve-to-coronary distance with a virtual valve.'},
   files:[[0,64,4480225],[64,128,4515915],[128,192,4588199],[192,240,3385689]].map((c,i)=>({file:`data/root3_${String(i).padStart(2,'0')}.png`,z0:c[0],z1:c[1],bytes:c[2]})),
@@ -879,20 +880,20 @@ const CASES={
   ref:{c:[70.62,61.61,68.98],n:V3.norm([0.7583,0.1112,0.6423])},
   truth:{max:21.6,min:21.3,area:361,per:67.5,LM:6.5,RCA:22.5,LM_r:21.6,RCA_r:20.0,frameD:23,postH:14.5},
   extraEx:[{t:'Measure the valve-to-coronary distance',steps:[
-   'Press <b>Show the answer plane</b>, then pick <b>BEV 23</b> or <b>SEV 23</b> above the panes. The magenta outline is a schematic virtual valve frame: where the surgical leaflets would be pushed.',
+   'Press <b>Show the answer plane</b>, then pick <b>BEV</b> or <b>SEV</b> above the panes (23 mm by default). The magenta outline is a schematic virtual valve frame: where the surgical leaflets would be pushed.',
    'Press <b>Go to the left main</b>. The axial pane moves up to the lower edge of the left main ostium.',
    'Choose <b>Measure</b> and drag in the <b>Axial</b> pane from the left main ostium (where it leaves the sinus) to the nearest point of the magenta circle. That length is the valve-to-coronary distance (VTC).',
    'Switch to the other valve type and measure again: the self-expanding frame narrows at its waist, so its VTC differs. A VTC under about 4 mm signals a high risk of coronary obstruction.'],
    btns:[['auto','Show the answer plane'],['goLM','Go to the left main'],['revealVTC','Show the answer key']]}],
   labels:null,vol:null,lab:null,fbVol:null,fbLab:null,ready:false},
- cta:{key:'cta',name:'Body CTA · 1.5 mm',sh:SH,vs:VS,zoom:2,exact:false,
+ cta:{key:'cta',name:'Body CTA · 1.5 mm',thvRec:{bev:26,sev:29},sh:SH,vs:VS,zoom:2,exact:false,
   ref:{c:[207.0,142.3,255.6],n:V3.norm([0.838,0.134,0.528])},
   vessel:{R:{n:'right external iliac',c:[140.1,196.0,631.1],d:V3.norm([-0.278,-0.664,0.694])},L:{n:'left external iliac',c:[252.3,176.4,630.9],d:V3.norm([0.281,-0.265,0.922])}},
   labels:LABELS,vol:VOL,lab:null,ready:false}
 };
 CASES.root2.labels=CASES.root.labels;
 CASES.root3.labels=Object.assign({},CASES.root.labels,{3:{n:'Bioprosthetic leaflets',c:[250,225,80]},5:{n:'Sewing-ring (inflow) plane',c:[80,210,230]},10:{n:'Prosthesis frame (metal) or calcium',c:[255,255,255]}});
-const M={thv:'off',cs:CASES.root,c:CASES.root.ref.c.slice(),E:null,P:{},zoom:2.6,wl:250,ww:900,slab:0,labels:false,tool:'nav',drag:null,meas:[],last:null,probe:null,ex:0,checked:false,showRef:false,vessel:'R',ready:false,marks:{}};
+const M={thv:'off',thvSize:null,cs:CASES.root,c:CASES.root.ref.c.slice(),E:null,P:{},zoom:2.6,wl:250,ww:900,slab:0,labels:false,tool:'nav',drag:null,meas:[],last:null,probe:null,ex:0,checked:false,showRef:false,vessel:'R',ready:false,marks:{}};
 let MV=null,ML=null,MSH=[1,1,1],MVS=1,MPL=1;
 function useCase(cs){MV=cs.vol;ML=cs.lab;MSH=cs.sh;MVS=cs.vs;MPL=MSH[1]*MSH[2];}
 const EX_COMMON=[
@@ -967,12 +968,24 @@ function paneLines(id){const P=M.P[id],n=nOf(id);return['A','B','C'].filter(q=>q
 function anat(v){const a=v.map(Math.abs),i=a.indexOf(Math.max(a[0],a[1],a[2]));return i===0?(v[0]>0?'L':'R'):i===1?(v[1]>0?'P':'A'):(v[2]>0?'I':'S');}
 /* Virtual transcatheter valve overlay (schematic outlines, not a specific product). Heights are along the valve axis from the
    reference (annulus / sewing-ring inflow) plane toward the aorta; each knot is [height mm, frame diameter mm]. */
-const THV={bev:{n:'BEV 23',long:'balloon-expandable, 23 mm cylinder, 18 mm tall, inflow 2 mm below the plane',k:[[-2,23],[16,23]]},
- sev:{n:'SEV 23',long:'self-expanding, 23 mm inflow, about 19 mm waist, 29 mm outflow, 45 mm tall, inflow 4 mm below the plane',k:[[-4,23],[2,23],[9,19],[18,19],[28,29],[41,29]]}};
-function thvR(dev,h){const k=THV[dev].k;if(h<k[0][0]-1e-6||h>k[k.length-1][0]+1e-6)return null;for(let i=1;i<k.length;i++)if(h<=k[i][0]+1e-9){const t=(h-k[i-1][0])/((k[i][0]-k[i-1][0])||1);return(k[i-1][1]+(k[i][1]-k[i-1][1])*t)/2;}return k[k.length-1][1]/2;}
+/* Sizing charts: BEV by CT annulus area (SAPIEN 3 IFU), SEV by annulus perimeter (Evolut PRO+ IFU). Teaching only: follow the current IFU. */
+const BEV_AREA={20:[273,345],23:[338,430],26:[430,546],29:[540,683]},BEV_H={20:15.5,23:18,26:20,29:22.5};
+const SEV_PER={23:[56.5,62.8],26:[62.8,72.3],29:[72.3,81.7],34:[81.7,94.2]};
+const THV_SIZES={bev:[20,23,26,29],sev:[23,26,29,34]};
+function thvG(type,size,viv){if(type==='bev'){const H=BEV_H[size],d=+((viv?.1:.2)*H).toFixed(1);
+  return{type,size,n:'BEV '+size,long:`balloon-expandable, ${size} mm cylinder, ${H} mm tall, inflow ${d} mm below the plane (${viv?'about 10%':'about 20%'} ventricular)`,k:[[-d,size],[H-d,size]]};}
+ const D=3,w=size-4,o=size+6;return{type,size,n:'SEV '+size,long:`self-expanding (schematic), ${size} mm inflow, about ${w} mm waist, ${o} mm outflow, 45 mm tall, inflow ${D} mm below the plane`,k:[[-D,size],[-D+6,size],[-D+13,w],[-D+22,w],[-D+32,o],[-D+45,o]]};}
+function curTHV(){return M.thv&&M.thv!=='off'?thvG(M.thv,M.thvSize||(M.cs.thvRec||{})[M.thv]||23,!!M.cs.viv):null;}
+function thvR(g,h){const k=g.k;if(h<k[0][0]-1e-6||h>k[k.length-1][0]+1e-6)return null;for(let i=1;i<k.length;i++)if(h<=k[i][0]+1e-9){const t=(h-k[i-1][0])/((k[i][0]-k[i-1][0])||1);return(k[i-1][1]+(k[i][1]-k[i-1][1])*t)/2;}return k[k.length-1][1]/2;}
+function thvFit(type,v){const T=type==='bev'?BEV_AREA:SEV_PER;return Object.keys(T).map(Number).filter(z=>v>=T[z][0]&&v<=T[z][1]);}
+function thvUI(){$$('#mTHV button').forEach(q=>q.setAttribute('aria-pressed',String(q.dataset.thv===M.thv)));const sel=$('#mTHVSize');
+ if(M.thv==='off'){sel.disabled=true;sel.innerHTML='<option>—</option>';return;}
+ const cs=M.cs,rec=(cs.thvRec||{})[M.thv],fit=cs.exact&&!cs.viv&&cs.truth?thvFit(M.thv,M.thv==='bev'?cs.truth.area:cs.truth.per):[rec];sel.disabled=false;
+ sel.innerHTML=THV_SIZES[M.thv].map(z=>`<option value="${z}"${z===M.thvSize?' selected':''}>${z} mm${fit.includes(z)?(cs.viv?' · default':' · fits'):''}</option>`).join('');}
+function setTHV(type,size){M.thv=type;if(type!=='off')M.thvSize=size||(M.cs.thvRec||{})[type]||23;thvUI();mprReq(true);exFeedback();}
 function thvFrame(){const R=M.cs.ref,a=V3.norm(R.n.map(q=>-q)),t=Math.abs(a[0])<.9?[1,0,0]:[0,1,0],e1=V3.norm(V3.cross(a,t)),e2=V3.cross(a,e1);return{c:R.c,a,e1,e2};}
-function drawTHV(id,x,n){const dev=M.thv;if(!dev||dev==='off'||!THV[dev])return;const F=thvFrame(),k=THV[dev].k,h0=k[0][0],h1=k[k.length-1][0];
- const f=(h,ph)=>{const r=thvR(dev,Math.min(h1,Math.max(h0,h))),cp=Math.cos(ph),sp=Math.sin(ph);return[0,1,2].map(i=>F.c[i]+F.a[i]*h+r*(cp*F.e1[i]+sp*F.e2[i]));};
+function drawTHV(id,x,n){const G=curTHV();if(!G)return;const F=thvFrame(),k=G.k,h0=k[0][0],h1=k[k.length-1][0];
+ const f=(h,ph)=>{const r=thvR(G,Math.min(h1,Math.max(h0,h))),cp=Math.cos(ph),sp=Math.sin(ph);return[0,1,2].map(i=>F.c[i]+F.a[i]*h+r*(cp*F.e1[i]+sp*F.e2[i]));};
  const g=p=>V3.dot(V3.add(p,M.c,-1),n),pts=[],cross=(p,q,gp,gq)=>{const t=gp/(gp-gq);pts.push([0,1,2].map(i=>p[i]+(q[i]-p[i])*t));};
  for(let ph=0;ph<6.2832;ph+=0.012){let p=f(h0,ph),gp=g(p);for(let h=h0+0.25;h<=h1+1e-6;h+=0.25){const q=f(h,ph),gq=g(q);if((gp<=0)!==(gq<=0))cross(p,q,gp,gq);p=q;gp=gq;}}
  const ends=[];for(let h=h0;h<=h1+1e-6;h+=0.2){let p=f(h,0),gp=g(p);const here=[];for(let ph=0.03;ph<=6.2832+0.031;ph+=0.03){const q=f(h,ph),gq=g(q);if((gp<=0)!==(gq<=0)){cross(p,q,gp,gq);here.push(pts[pts.length-1]);}p=q;gp=gq;}
@@ -980,8 +993,8 @@ function drawTHV(id,x,n){const dev=M.thv;if(!dev||dev==='off'||!THV[dev])return;
  x.save();x.fillStyle='#FF5FD2';x.strokeStyle='#FF5FD2';x.lineWidth=1.4;x.setLineDash([5,4]);
  ends.forEach(([a,b])=>{const A=w2s(id,a),B=w2s(id,b);x.beginPath();x.moveTo(A[0],A[1]);x.lineTo(B[0],B[1]);x.stroke();});
  x.setLineDash([]);for(const p of pts){const S=w2s(id,p);x.fillRect(S[0]-1,S[1]-1,2.2,2.2);}
- if(Math.abs(V3.dot(n,F.a))>0.95){const hc=V3.dot(V3.add(M.c,F.c,-1),F.a),r=thvR(dev,hc);x.font='500 11px "IBM Plex Mono", monospace';x.textAlign='left';x.textBaseline='bottom';x.lineWidth=3;x.strokeStyle='rgba(0,0,0,.85)';
-  const t=r===null?`Virtual ${THV[dev].n}: not at this level`:`Virtual ${THV[dev].n} · Ø ${fmt(2*r)} mm here`;x.strokeText(t,8,paneW(id)-8);x.fillStyle='#FF5FD2';x.fillText(t,8,paneW(id)-8);}
+ if(Math.abs(V3.dot(n,F.a))>0.95){const hc=V3.dot(V3.add(M.c,F.c,-1),F.a),r=thvR(G,hc);x.font='500 11px "IBM Plex Mono", monospace';x.textAlign='left';x.textBaseline='bottom';x.lineWidth=3;x.strokeStyle='rgba(0,0,0,.85)';
+  const t=r===null?`Virtual ${G.n}: not at this level`:`Virtual ${G.n} · Ø ${fmt(2*r)} mm here`;x.strokeText(t,8,paneW(id)-8);x.fillStyle='#FF5FD2';x.fillText(t,8,paneW(id)-8);}
  x.restore();}
 function renderPane(id,low){
  const cvs=$('#mpr'+id);if(!cvs.clientWidth||!M.ready)return;const {ctx:x,W,dpr}=prep(cvs);
@@ -1041,7 +1054,7 @@ async function loadRootCase(key){const cs=CASES[key],[Z,Y,X]=cs.sh,PL_=Y*X;cs.vo
   const rr=rng(4242);for(let i=0;i<cs.vol.length;i+=2){const u=rr()||1e-9,w=rr(),m=Math.sqrt(-2*Math.log(u))*0;cs.vol[i]+=Math.round(m*Math.cos(6.2832*w));if(i+1<cs.vol.length)cs.vol[i+1]+=Math.round(m*Math.sin(6.2832*w));}
   mprReady(key);}
  catch(e){cs.loading=false;cs.vol=null;if(M.cs.key===key)$('#mprLoadMsg').textContent='Could not load '+cs.name+' ('+e.message+'). Reload the page to try again.';}}
-function switchCase(key){const cs=CASES[key];M.cs=cs;{const pr=MPRE[cs.win||'cardiac'];mSetWin(pr.l,pr.w);}cs.lab=key==='cta'?LAB:cs.lab;if(cs.files&&!cs.loading&&!cs.ready){cs.loading=true;loadRootCase(key);}$$('#mCase button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.case===key)));
+function switchCase(key){const cs=CASES[key];M.cs=cs;if(M.thv!=='off')M.thvSize=(cs.thvRec||{})[M.thv]||M.thvSize;thvUI();{const pr=MPRE[cs.win||'cardiac'];mSetWin(pr.l,pr.w);}cs.lab=key==='cta'?LAB:cs.lab;if(cs.files&&!cs.loading&&!cs.ready){cs.loading=true;loadRootCase(key);}$$('#mCase button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.case===key)));
  M.meas=[];M.last=null;M.checked=false;M.marks={};M.ex=Math.min(M.ex,EXS().length-1);
  $('#exList').innerHTML=EXS().map((e,i)=>`<li><button type="button"><span class="n">${String(i+1).padStart(2,'0')}</span><span>${e.t}</span></button></li>`).join('');
  $$('#exList button').forEach((b,i)=>b.addEventListener('click',()=>{M.ex=i;exCard();}));
@@ -1065,7 +1078,7 @@ function exAct(k){
  else if(k==='alignV'){setFrame(frameFrom(cs.vessel[M.vessel].d),cs.vessel[M.vessel].c,3);}
  else if(k==='markLM'||k==='markRCA'){const g=annGeom();if(g.ang>3){toast('Align the axial pane with the annulus first (Show the answer plane)');return;}M.marks[k==='markLM'?'LM':'RCA']=g.off;}
  else if(k==='revealCor'){M.marks.reveal=true;}
- else if(k==='goLM'){const a=V3.norm(cs.ref.n.map(q=>-q));setFrame(frameFrom(cs.ref.n),V3.add(cs.ref.c,a,cs.truth.LM),cs.zoom);M.checked=true;if(M.thv==='off'){M.thv='bev';$$('#mTHV button').forEach(q=>q.setAttribute('aria-pressed',String(q.dataset.thv==='bev')));}mprReq(true);}
+ else if(k==='goLM'){const a=V3.norm(cs.ref.n.map(q=>-q));setFrame(frameFrom(cs.ref.n),V3.add(cs.ref.c,a,cs.truth.LM),cs.zoom);M.checked=true;if(M.thv==='off')setTHV('bev');mprReq(true);}
  else if(k==='revealVTC'){M.marks.vtc=true;}
  exFeedback();}
 function exFeedback(){const el=$('#exFb');if(!el||!M.E)return;const cs=M.cs,e3=M.E[2],{ang,off}=annGeom(),ex=EXS()[Math.min(M.ex,EXS().length-1)].t;let h='';
@@ -1073,13 +1086,15 @@ function exFeedback(){const el=$('#exFb');if(!el||!M.E)return;const cs=M.cs,e3=M
  const offChip=`<span class="chip ${Math.abs(off)<1?'good':Math.abs(off)<3?'warn':'bad'}">${Math.abs(off).toFixed(1)} mm ${off>0?'toward the aorta':'toward the LV'}</span>`;
  if(ex==='Find the annular plane'){h=M.checked?planeChip+offChip:'<span class="chip neutral">Press Check my plane when the axial pane shows the annulus en face</span>';}
  else if(ex==='Measure the annulus'){h=planeChip+offChip;if(cs.exact&&M.last){const len=Math.hypot(...V3.add(M.last.b,M.last.a,-1)),t=cs.truth,near=Math.abs(len-t.max)<Math.abs(len-t.min)?['max',t.max]:['min',t.min],d=len-near[1];h+=`<span class="chip ${Math.abs(d)<1?'good':Math.abs(d)<2?'warn':'bad'}">Your line ${fmt(len)} mm vs answer-key ${near[0]} ${fmt(near[1])} mm (${d>=0?'+':''}${fmt(d)})</span>`;}
-  if(cs.exact)h+=`<span class="chip neutral">Answer key: ${cs.truth.max} × ${cs.truth.min} mm · area ${cs.truth.area} mm² · perimeter ${cs.truth.per} mm</span>`;}
+  if(cs.exact)h+=`<span class="chip neutral">Answer key: ${cs.truth.max} × ${cs.truth.min} mm · area ${cs.truth.area} mm² · perimeter ${cs.truth.per} mm</span>`;
+  if(cs.exact&&!cs.viv){const b=thvFit('bev',cs.truth.area),sv=thvFit('sev',cs.truth.per);h+=`<span class="chip neutral">Sizing from the answer key: BEV by area → ${b.length?b.join(' or ')+' mm':'outside the chart'}${b.length>1?' (borderline: both ranges)':''}; SEV by perimeter → ${sv.length?sv.join(' or ')+' mm':'outside the chart'}. Charts: SAPIEN 3 (area) and Evolut PRO+ (perimeter) IFU; follow the current IFU.</span>`;}
+  if(cs.viv)h+='<span class="chip neutral">Valve-in-valve sizing follows the surgical valve\'s true inner diameter (ViV app). This dataset does not name the valve, so the overlay defaults to 23 mm devices.</span>';}
  else if(ex==='Read the C-arm angles'){h=planeChip+'<span class="chip neutral">Edge-on views only mean something once the axial pane sits on the annulus</span>';}
- else if(ex==='Measure the valve-to-coronary distance'){const t=cs.truth,dev=M.thv,vt=d=>t.LM_r-thvR(d,t.LM);
-  h=dev==='off'?'<span class="chip warn">Pick BEV 23 or SEV 23 above the panes to show a virtual valve</span>':`<span class="chip neutral">Virtual ${THV[dev].n}: ${THV[dev].long}</span>`;
+ else if(ex==='Measure the valve-to-coronary distance'){const t=cs.truth,G=curTHV(),rec=cs.thvRec||{bev:23,sev:23},vt=g=>t.LM_r-thvR(g,t.LM);
+  h=!G?'<span class="chip warn">Pick BEV or SEV above the panes to show a virtual valve</span>':`<span class="chip neutral">Virtual ${G.n}: ${G.long}</span>`;
   h+=`<span class="chip ${ang<3?'good':'warn'}">Axial pane ${ang<3?'parallel to':ang.toFixed(1)+'° off'} the reference plane · ${off>=0?off.toFixed(1)+' mm above':Math.abs(off).toFixed(1)+' mm below'} it</span>`;
-  if(M.last&&dev!=='off'){const len=Math.hypot(...V3.add(M.last.b,M.last.a,-1)),d=len-vt(dev);h+=`<span class="chip ${Math.abs(d)<1?'good':Math.abs(d)<2?'warn':'bad'}">Your line ${fmt(len)} mm vs answer-key VTC ${fmt(vt(dev))} mm to the left main (${THV[dev].n})</span>`;}
-  if(M.marks.vtc)h+=`<span class="chip neutral">Answer key, left main (ostium ${t.LM} mm up, ${t.LM_r} mm from the valve axis): VTC ${fmt(vt('bev'))} mm with BEV 23, ${fmt(vt('sev'))} mm with SEV 23. The RCA arises at ${t.RCA} mm, above the ${t.postH} mm stent posts, so displaced leaflets cannot reach it.</span>`;}
+  if(M.last&&G){const len=Math.hypot(...V3.add(M.last.b,M.last.a,-1)),d=len-vt(G);h+=`<span class="chip ${Math.abs(d)<1?'good':Math.abs(d)<2?'warn':'bad'}">Your line ${fmt(len)} mm vs answer-key VTC ${fmt(vt(G))} mm to the left main (${G.n})</span>`;}
+  if(M.marks.vtc){const gb=thvG('bev',rec.bev,!!cs.viv),gs=thvG('sev',rec.sev,!!cs.viv);h+=`<span class="chip neutral">Answer key, left main (ostium ${t.LM} mm up, ${t.LM_r} mm from the valve axis): VTC ${fmt(vt(gb))} mm with ${gb.n}, ${fmt(vt(gs))} mm with ${gs.n}. The RCA arises at ${t.RCA} mm, above the ${t.postH} mm stent posts, so displaced leaflets cannot reach it.</span>`;}}
  else if(ex==='Measure coronary heights'){h=`<span class="chip ${ang<3?'good':'warn'}">Axial pane ${ang<3?'parallel to':ang.toFixed(1)+'° off'} the annulus · ${off>=0?off.toFixed(1)+' mm above':Math.abs(off).toFixed(1)+' mm below'} it</span>`;
   ['LM','RCA'].forEach(k=>{if(M.marks[k]!==undefined){const d=M.marks[k]-cs.truth[k];h+=`<span class="chip ${Math.abs(d)<1?'good':Math.abs(d)<2?'warn':'bad'}">${k==='LM'?'Left main':'RCA'} marked at ${fmt(M.marks[k])} mm${M.marks.reveal?` · answer key ${fmt(cs.truth[k])} mm`:''}</span>`;}});
   if(M.marks.reveal)h+=`<span class="chip neutral">Answer key: left main ${cs.truth.LM} mm, RCA ${cs.truth.RCA} mm (lower edge of each ostium)</span>`;
@@ -1132,7 +1147,8 @@ $('#mZoomIn').onclick=()=>{M.zoom=clamp(+(M.zoom*1.25).toFixed(2),.35,10);mprReq
 $('#mZoomOut').onclick=()=>{M.zoom=clamp(+(M.zoom/1.25).toFixed(2),.35,10);mprReq(true);};
 $('#mReset').onclick=()=>{if(!M.ready)return;setFrame(frameFrom([0,0,1]),M.c,M.zoom);};
 $('#mLbl').addEventListener('change',e=>{M.labels=e.target.checked;mprReq(true);});
-$$('#mTHV button').forEach(b=>b.addEventListener('click',()=>{M.thv=b.dataset.thv;$$('#mTHV button').forEach(q=>q.setAttribute('aria-pressed',String(q===b)));mprReq(true);exFeedback();}));
+$$('#mTHV button').forEach(b=>b.addEventListener('click',()=>setTHV(b.dataset.thv)));
+$('#mTHVSize').addEventListener('change',e=>setTHV(M.thv,+e.target.value));
 $('#mSlab').addEventListener('input',e=>{M.slab=+e.target.value;$('#mSlabO').textContent=M.slab?M.slab+' mm':'Off';mprReq(true);});
 $$('#mCase button').forEach(b=>b.addEventListener('click',()=>switchCase(b.dataset.case)));
 switchCase('root');
