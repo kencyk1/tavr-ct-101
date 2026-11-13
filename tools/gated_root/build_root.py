@@ -83,7 +83,8 @@ thin = br & (thick <= 2.8) & ~chamb & ~lumT
 if os.environ.get('EXCL_METAL'):   # prosthesis cases: ignore bright blooming around the metal frame
     nearM = distance_transform_edt(~(up > 1100)) * VS < 3.5; thin &= ~nearM; chamb = chamb | nearM
 angd = lambda a, b: np.abs(((a - b + 180) % 360) - 180)
-SIDES = {'L': dict(th=cusL, tw=40, h=(0, 24), lv=8), 'R': dict(th=cusR - 10, tw=45, h=(4, 40), lv=9)}
+_hr = lambda k, d: tuple(float(q) for q in os.environ.get(k, d).split(','))
+SIDES = {'L': dict(th=cusL, tw=40, h=_hr('LM_H', '0,24'), lv=8), 'R': dict(th=cusR - 10, tw=45, h=_hr('RCA_H', '4,40'), lv=9)}
 cor = np.zeros(up.shape, np.uint8); heights = {}
 for side, P_ in SIDES.items():
     sect = (angd(THd, P_['th']) < P_['tw']) & (H > P_['h'][0]) & (H < P_['h'][1])

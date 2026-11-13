@@ -22,3 +22,7 @@ Note: gated root 1 (s1230) was built with an earlier copy of `build_root.py` tha
 ## Root 3 (valve-in-valve, s0972)
 
 `frame_prosth.py` replaces `frame.py`/`cusps.py`/`nadir.py`: the valve axis comes from the metal frame (PCA plus a ring-plane fit) and the inflow plane is the lowest metal. `build_root.py` then runs with `EXCL_METAL=1` (ignore bright blooming around the frame when tracing coronaries) and `PREFIX=root3`. `lm_seed.py` traces the left main from a seed placed by eye beside the left sinus, and `viv_truth.py` measures the frame inner contour (half-way between lumen and metal, 0.5–4 mm above the inflow), the ostium heights and the valve-to-coronary distances, fixes the labels and rewrites `data/root3_*.png`.
+
+## Annulus planes for gated roots 1 and 2 (revised)
+
+The first planes (`nadir.py`, where each sinus starts to bulge) were tilted about 10–15° toward the septum. The current planes come from the leaflet hinges: `xsec.py` renders cross-sections at 1 mm steps, the level where each cusp first appears is read by eye (root 1: LCC 1.75, NCC 1.5, RCC 5.0 mm; root 2: LCC 1.0, NCC -0.5, RCC 3.5 mm, on the old frames), `plane_from_hinges.py` fits the plane through those three points, and the plane is then moved 2 mm down to where the cusps just disappear (`area_profile.py` shows the lumen area stops rising there). `build_root.py` and `ann_truth.py write` were rerun on the new frames (root 1 with `RCA_H=10,40`). Root 2's RCA height (12.0 mm) uses the contact rule without the angle window.

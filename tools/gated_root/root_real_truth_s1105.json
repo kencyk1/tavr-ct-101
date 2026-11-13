@@ -1,9 +1,9 @@
 {
- "case": "s1230",
+ "case": "s1105",
  "cube_origin_world": [
-  118.73558902794801,
-  102.52690340418269,
-  150.08663350199078
+  118.53007181033888,
+  104.71861600887559,
+  150.78612339555963
  ],
  "shape": [
   240,
@@ -12,25 +12,26 @@
  ],
  "voxel_mm": 0.5,
  "c": [
-  69.71,
-  62.13,
-  70.07
+  70.68,
+  59.27,
+  69.34
  ],
  "n_toLV": [
-  0.6837,
-  0.2902,
-  0.6696
+  0.7907,
+  0.1068,
+  0.6028
  ],
- "max": 27.6,
- "min": 20.3,
- "area": 439,
- "per": 76.8,
- "feret_max": 27.6,
- "feret_min": 19.8,
+ "max": 26.1,
+ "min": 20.2,
+ "area": 415,
+ "per": 74.5,
+ "feret_max": 25.9,
+ "feret_min": 20.7,
  "LM": 8.0,
- "RCA": 15.5,
- "sinus_d": 36.3,
- "stj_h": 17.75,
- "stj_d": 32.8,
- "annulus_rule": "half-maximum lumen edge (208 HU); where the edge meets calcium (>650 HU, within 2 mm) the contour is bridged smoothly as if no calcium were present (SCCT 2019)"
+ "RCA": 12.0,
+ "sinus_d": 36.7,
+ "stj_h": 19.0,
+ "stj_d": 33.6,
+ "annulus_rule": "half-maximum lumen edge (208 HU); where the edge meets calcium (>650 HU, within 2 mm) the contour is bridged smoothly as if no calcium were present (SCCT 2019)",
+ "RCA_note": "lower edge = first 0.5 mm level with >= 8 contact voxels (run rule without the angle window; checked on cross-sections)"
 }

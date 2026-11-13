@@ -1,9 +1,9 @@
 {
  "case": "s1230",
  "cube_origin_world": [
-  122.33315121849589,
-  99.27543151103819,
-  156.2554590833609
+  121.68779903779884,
+  101.29971621295417,
+  154.80195830424586
  ],
  "shape": [
   240,
@@ -12,25 +12,25 @@
  ],
  "voxel_mm": 0.5,
  "c": [
-  68.26,
-  64.0,
-  71.31
+  68.11,
+  60.21,
+  72.58
  ],
  "n_toLV": [
-  0.7177,
-  0.3927,
-  0.575
+  0.7582,
+  0.1996,
+  0.6207
  ],
- "max": 30.3,
- "min": 22.7,
- "area": 540,
- "per": 84.7,
- "feret_max": 30.4,
- "feret_min": 21.8,
- "LM": 6.0,
- "RCA": 26.0,
- "sinus_d": 39.0,
+ "max": 31.6,
+ "min": 23.7,
+ "area": 589,
+ "per": 88.7,
+ "feret_max": 31.7,
+ "feret_min": 23.4,
+ "LM": 8.0,
+ "RCA": 20.0,
+ "sinus_d": 40.9,
  "stj_h": 25.75,
- "stj_d": 37.4,
+ "stj_d": 35.4,
  "annulus_rule": "half-maximum lumen edge (235 HU); where the edge meets calcium (>650 HU, within 2 mm) the contour is bridged smoothly as if no calcium were present (SCCT 2019)"
 }
