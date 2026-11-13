@@ -1,0 +1,11 @@
+// Cloudflare Workers config for ct.lubdubappguide.com: a static site, no Worker code.
+// Workers Builds runs `npx wrangler deploy` on every push to main and uploads the repository as static assets.
+// The custom domain is attached in the Cloudflare dashboard. If the Worker there has another name, Workers Builds
+// deploys to that Worker anyway (it overrides `name` for connected repositories).
+{
+  "name": "tavr-ct-101",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./"
+  }
+}

@@ -25,6 +25,10 @@ How CT works, Cardiac CT, Access check and the Quiz are ordinary scrolling pages
 | **Access check** | Sheath-to-femoral artery ratio (SFAR) with calcium and tortuosity modifiers. |
 | **Quiz** | Nine questions drawn from the other sections. |
 
+## Hosting
+
+The site is plain static files. It is served at ct.lubdubappguide.com by a Cloudflare Worker with static assets, built from this repository on every push to `main` (`wrangler.jsonc`; `.assetsignore` keeps `tools/` and repository files off the site), and also by GitHub Pages at kencyk1.github.io/tavr-ct-101.
+
 ## Run it locally
 
 The page loads its CT data with `fetch`, so it needs a web server rather than a double-click:
