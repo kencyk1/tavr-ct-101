@@ -18,3 +18,7 @@ Order of the scripts (paths in them point at the original build machine; edit th
 Each answer was checked visually: the annulus plane on cross-sections and long-axis views, and each coronary ostium on zoomed cross-sections.
 
 Note: gated root 1 (s1230) was built with an earlier copy of `build_root.py` that searched for the RCA ostium between 10 and 40 mm and took the left and right cusps from the list order; the current script picks the cusps by angle and searches from 4 mm. Its stored answer key is unchanged.
+
+## Root 3 (valve-in-valve, s0972)
+
+`frame_prosth.py` replaces `frame.py`/`cusps.py`/`nadir.py`: the valve axis comes from the metal frame (PCA plus a ring-plane fit) and the inflow plane is the lowest metal. `build_root.py` then runs with `EXCL_METAL=1` (ignore bright blooming around the frame when tracing coronaries) and `PREFIX=root3`. `lm_seed.py` traces the left main from a seed placed by eye beside the left sinus, and `viv_truth.py` measures the frame inner contour (half-way between lumen and metal, 0.5–4 mm above the inflow), the ostium heights and the valve-to-coronary distances, fixes the labels and rewrites `data/root3_*.png`.

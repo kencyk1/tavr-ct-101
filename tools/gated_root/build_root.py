@@ -72,7 +72,7 @@ lab[inl & (H > STJ_H)] = 1; lab[inl & (H >= 0) & (H <= STJ_H)] = 2; lab[inl & (H
 leaf = ~lumT & (H > 0.4) & (H < STJ_H - 2) & (d < -0.8) & (up < thr)          # real cusp tissue inside the root
 lab[leaf] = 3
 lab[inl & (np.abs(H) < 0.6)] = 5
-ca = (up > 600) & (d < 3) & (H > -8) & (H < STJ_H) & (Rr < 30); lab[ca] = 10
+CA_T = max(600.0, float(F.get('lum', 350)) + 350); ca = (up > CA_T) & (d < 3) & (H > -8) & (H < STJ_H) & (Rr < 30); lab[ca] = 10
 
 # ---- coronaries: a bright tube leaving its sinus (reaches >= 4 mm outside the true lumen), then followed <= 40 mm ----
 from skimage.graph import MCP_Geometric
@@ -80,6 +80,8 @@ chamb = np.isin(labU, [4, 94, 95, 96, 98, 66, 48, 49, 40, 41, 99, 100, 101, 102]
 br = up > 200
 thick = maximum_filter(distance_transform_edt(br) * VS, size=9)
 thin = br & (thick <= 2.8) & ~chamb & ~lumT
+if os.environ.get('EXCL_METAL'):   # prosthesis cases: ignore bright blooming around the metal frame
+    nearM = distance_transform_edt(~(up > 1100)) * VS < 3.5; thin &= ~nearM; chamb = chamb | nearM
 angd = lambda a, b: np.abs(((a - b + 180) % 360) - 180)
 SIDES = {'L': dict(th=cusL, tw=40, h=(0, 24), lv=8), 'R': dict(th=cusR - 10, tw=45, h=(4, 40), lv=9)}
 cor = np.zeros(up.shape, np.uint8); heights = {}
@@ -95,6 +97,7 @@ for side, P_ in SIDES.items():
     m = lc == best[0]; ost = m & (dT <= 1.0)
     hv = H[ost]; print(side, 'ostium voxels', int(ost.sum()), 'H range', hv.min().round(1), hv.max().round(1), 'angle', round(float(np.degrees(np.angle(np.exp(1j*np.radians(THd[ost]))).mean())) % 360))
     hmin = float(hv.min()); heights[side] = hmin
+    P_['ost_th'] = float(np.degrees(np.angle(np.exp(1j * np.radians(THd[ost]))).mean())) % 360
     seeds = np.argwhere(m & (dT > 2))
     cost = np.where(thin | m, 1.0, np.inf)
     lo = np.maximum(seeds.min(0) - 90, 0); hi_ = np.minimum(seeds.max(0) + 90, N)
@@ -109,7 +112,7 @@ lab[(cor > 0) & (lab != 10)] = cor[(cor > 0) & (lab != 10)]
 lumS = lumT & (H > 0) & (H < STJ_H + 8); dS = distance_transform_edt(~lumS) * VS
 for side, P_ in SIDES.items():
     if side not in heights: continue
-    m = (cor == P_['lv']) & (dS <= 0.75) & (angd(THd, P_['th']) < 25) & (H > 2); hb = np.arange(-2, 40, 0.5); cnt = np.array([int((m & (H >= h) & (H < h + 0.5)).sum()) for h in hb])
+    m = (cor == P_['lv']) & (dS <= 0.75) & (angd(THd, P_.get('ost_th', P_['th'])) < 25) & (H > 2); hb = np.arange(-2, 40, 0.5); cnt = np.array([int((m & (H >= h) & (H < h + 0.5)).sum()) for h in hb])
     run = cnt >= 8; best = None; i = 0
     while i < len(hb):
         if run[i]:
@@ -118,6 +121,7 @@ for side, P_ in SIDES.items():
             if best is None or cnt[i:j + 1].sum() > best[1]: best = (hb[i], cnt[i:j + 1].sum())
             i = j + 1
         else: i += 1
+    if best is None: print('run rule found nothing for', side); continue
     heights[side] = float(best[0]); print(f'coronary {side}: ostium lower edge (run rule) h {best[0]:.1f}')
 vol = np.clip(vol, -1024, 3071).astype(np.int16)
 

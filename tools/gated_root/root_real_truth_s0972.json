@@ -1,0 +1,43 @@
+{
+ "case": "s0972",
+ "cube_origin_world": [
+  30.454409173316918,
+  20.426360666839543,
+  34.4952160637273
+ ],
+ "shape": [
+  240,
+  240,
+  240
+ ],
+ "voxel_mm": 0.5,
+ "c": [
+  70.62,
+  61.61,
+  68.98
+ ],
+ "n_toLV": [
+  0.7583,
+  0.1112,
+  0.6423
+ ],
+ "max": 21.6,
+ "min": 21.3,
+ "area": 361,
+ "per": 67.5,
+ "feret_max": 30.1,
+ "feret_min": 26.9,
+ "LM": 6.5,
+ "RCA": 22.5,
+ "sinus_d": 36.0,
+ "stj_h": 28.0,
+ "stj_d": 32.4,
+ "frame_centreline_d": 22.9,
+ "post_h": 14.5,
+ "LM_r": 21.6,
+ "RCA_r": 20.0,
+ "VTC_LM": 10.2,
+ "VTC_RCA": 8.6,
+ "annulus_rule": "inner edge of the metal frame (threshold 1418 HU, half-way between lumen and metal) in the sewing-ring band 0.5-4 mm above the lowest metal",
+ "plane_rule": "inflow plane = lowest metal of the frame (3rd percentile along the valve axis); axis from the frame geometry"
+}

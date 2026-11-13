@@ -321,7 +321,7 @@ footer a{color:var(--ink)}
 <section class="view" id="view-mpr" data-view="mpr" hidden>
   <div class="sec-head">
     <h2>MPR lab</h2>
-    <p>Three linked planes through the same CT. Move the crosshair, rotate the planes and build a double-oblique view the way structural imagers do on a planning workstation. Start with the gated roots: two real ECG-gated TAVR CTs from different patients, shown at 0.5 mm, each with an answer key measured on the scan.</p>
+    <p>Three linked planes through the same CT. Move the crosshair, rotate the planes and build a double-oblique view the way structural imagers do on a planning workstation. Start with the gated roots: two real ECG-gated TAVR CTs from different patients, plus a third root with a surgical bioprosthesis for valve-in-valve practice. All are shown at 0.5 mm, each with an answer key measured on its scan.</p>
   </div>
   <div class="mpr-grid">
     <div class="viewer">
@@ -330,6 +330,7 @@ footer a{color:var(--ink)}
           <div class="seg" id="mCase">
             <button type="button" data-case="root" aria-pressed="true">Gated root 1 · 0.5 mm</button>
             <button type="button" data-case="root2" aria-pressed="false">Gated root 2 · 0.5 mm</button>
+            <button type="button" data-case="root3" aria-pressed="false">Root 3 · valve-in-valve</button>
             <button type="button" data-case="cta" aria-pressed="false">Body CTA · 1.5 mm</button>
           </div>
         </div>
@@ -586,7 +587,7 @@ footer a{color:var(--ink)}
 <footer><div class="wrap">
   <p>Created by <a href="https://www.linkedin.com/in/ken-chan-6774411a5/" target="_blank" rel="noopener">Ken Chan</a>, ACNPC-AG, CCK, RCIS, AACC. Built with the help of AI (Claude, Anthropic).</p>
   <p>Companion to <a href="https://lubdubappguide.com/" target="_blank" rel="noopener">LubDubAPP Guide</a>. Not for clinical decision-making; size devices from the manufacturer's instructions for use. Open access for non-commercial education.</p>
-  <p>CT data: case ct1349 from the <a href="https://zenodo.org/records/16274177" target="_blank" rel="noopener">TAVRP-PL dataset</a> (CC BY 4.0), derived from the <a href="https://zenodo.org/records/6802613" target="_blank" rel="noopener">TotalSegmentator dataset</a> (Wasserthal et al., CC BY 4.0). The MPR lab's gated roots are cases s1230 and s1105 of the <a href="https://zenodo.org/records/10047292" target="_blank" rel="noopener">TotalSegmentator dataset v2</a> (CC BY 4.0), ECG-gated TAVR planning CTs of two other patients. Cropped, re-oriented and compressed for the web; outlines are the dataset's automatically generated labels and are approximate. Organ names come from automatic segmentation with <a href="https://github.com/wasserth/TotalSegmentator" target="_blank" rel="noopener">TotalSegmentator</a> (Wasserthal et al., <i>Radiology: Artificial Intelligence</i> 2023) and may be imperfect at organ edges. Heart chambers (RA, RV, LA, LV and myocardium) come from the <a href="https://github.com/murong-xu/CADS" target="_blank" rel="noopener">CADS</a> open model (Xu et al., <i>Nature Communications</i> 2026; weights CC BY-SA 4.0); the RVOT, septum and valve-plane outlines are derived from those chambers and are approximate.</p>
+  <p>CT data: case ct1349 from the <a href="https://zenodo.org/records/16274177" target="_blank" rel="noopener">TAVRP-PL dataset</a> (CC BY 4.0), derived from the <a href="https://zenodo.org/records/6802613" target="_blank" rel="noopener">TotalSegmentator dataset</a> (Wasserthal et al., CC BY 4.0). The MPR lab's roots are cases s1230, s1105 (ECG-gated TAVR planning CTs) and s0972 (cardiac CT with a surgical bioprosthesis) of the <a href="https://zenodo.org/records/10047292" target="_blank" rel="noopener">TotalSegmentator dataset v2</a> (CC BY 4.0), three other patients. Cropped, re-oriented and compressed for the web; outlines are the dataset's automatically generated labels and are approximate. Organ names come from automatic segmentation with <a href="https://github.com/wasserth/TotalSegmentator" target="_blank" rel="noopener">TotalSegmentator</a> (Wasserthal et al., <i>Radiology: Artificial Intelligence</i> 2023) and may be imperfect at organ edges. Heart chambers (RA, RV, LA, LV and myocardium) come from the <a href="https://github.com/murong-xu/CADS" target="_blank" rel="noopener">CADS</a> open model (Xu et al., <i>Nature Communications</i> 2026; weights CC BY-SA 4.0); the RVOT, septum and valve-plane outlines are derived from those chambers and are approximate.</p>
 </div></footer>
 <div class="toast" id="toast" hidden></div>
 
@@ -850,7 +851,7 @@ const V3={dot:(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],add:(a,b,s=1)=>[a[0]+b[0]*s,a
  rot:(x,k,t)=>{const c=Math.cos(t),s=Math.sin(t),kx=V3.cross(k,x),kd=V3.dot(k,x)*(1-c);return[x[0]*c+kx[0]*s+k[0]*kd,x[1]*c+kx[1]*s+k[1]*kd,x[2]*c+kx[2]*s+k[2]*kd];}};
 const PC={A:'#F0A43A',B:'#5CC48A',C:'#55C3D3'},PNAME={A:'Axial',B:'Coronal',C:'Sagittal'},PNI={A:2,B:1,C:0},PORIG={A:[0,0,1],B:[0,1,0],C:[1,0,0]};
 const FOVB=260,deg=r=>r*180/Math.PI;
-/* Cases. "root" and "root2" are real ECG-gated TAVR CTs (TotalSegmentator cases s1230 and s1105): a 12 cm box around the aortic root resampled from 1.5 mm
+/* Cases. "root" and "root2" are real ECG-gated TAVR CTs (TotalSegmentator cases s1230 and s1105); "root3" (s0972) has a surgical bioprosthesis: a 12 cm box around the aortic root resampled from 1.5 mm
    to 0.5 mm, with the same patient's 1.5 mm scan around it. Nothing is modelled; each answer key was measured on its scan.
    "cta" is the real body CTA (a different patient); its reference plane is fitted to the dataset's automatic annulus label (approximate). */
 const CASES={
@@ -869,12 +870,21 @@ const CASES={
   ref:{c:[69.71,62.13,70.07],n:V3.norm([0.6837,0.2902,0.6696])},
   truth:{max:27.6,min:20.3,area:439,per:76.8,LM:8.0,RCA:15.5},
   labels:null,vol:null,lab:null,fbVol:null,fbLab:null,ready:false},
+ root3:{key:'root3',name:'Root 3 · valve-in-valve',win:'wide',loadMsg:'Loading root 3 (valve-in-valve)',sh:[240,240,240],vs:.5,zoom:2.6,exact:true,
+  note:'<b>Root 3 · valve-in-valve.</b> A real cardiac CT (heart and thoracic aorta protocol, case s0972) of a patient with a stented surgical bioprosthesis in the aortic position: a metal frame with three stent posts on a sewing ring, with the prosthetic leaflets visible inside. Prepared like the other cases (0.5 mm box, nothing drawn in). The dataset does not name the valve model, so frame sizes come from the CT, not from a manufacturer chart. Practise the valve-in-valve steps: plane at the sewing ring, the frame\'s inner diameter, post height, and coronary height and valve-to-coronary distance.',
+  hints:{'Find the annular plane':'In this case the reference plane is the <b>inflow of the surgical valve</b>. Tilt the planes until the metal sewing ring shows as a full, even circle, then scroll down to its lowest edge. The cusps here are the prosthetic leaflets.','Measure the annulus':'Measure the <b>inner edge of the metal ring</b> where it forms a complete circle, 1–3 mm above its lowest edge. This is the CT inner diameter of the frame. Metal blooms on CT, so it reads a little smaller than the manufacturer\'s true inner diameter.','Measure coronary heights':'Heights are measured from the inflow plane. For valve-in-valve also judge the <b>valve-to-coronary distance</b> (VTC): how far each ostium sits from where the displaced leaflets will end up, roughly the frame\'s 23 mm outline. A VTC under about 4 mm signals a high risk of coronary obstruction.'},
+  files:[[0,64,4480225],[64,128,4515915],[128,192,4588199],[192,240,3385689]].map((c,i)=>({file:`data/root3_${String(i).padStart(2,'0')}.png`,z0:c[0],z1:c[1],bytes:c[2]})),
+  fbv:{sh:[128,141,142],vs:1.5,off:[30.454,20.426,34.495],files:[[0,64,1906104],[64,128,1937518]].map((c,i)=>({file:`data/root3fb_${String(i).padStart(2,'0')}.png`,z0:c[0],z1:c[1],bytes:c[2]}))},
+  ref:{c:[70.62,61.61,68.98],n:V3.norm([0.7583,0.1112,0.6423])},
+  truth:{max:21.6,min:21.3,area:361,per:67.5,LM:6.5,RCA:22.5,VTC_LM:10.2,VTC_RCA:8.6,frameD:23,postH:14.5},
+  labels:null,vol:null,lab:null,fbVol:null,fbLab:null,ready:false},
  cta:{key:'cta',name:'Body CTA · 1.5 mm',sh:SH,vs:VS,zoom:2,exact:false,
   ref:{c:[207.0,142.3,255.6],n:V3.norm([0.838,0.134,0.528])},
   vessel:{R:{n:'right external iliac',c:[140.1,196.0,631.1],d:V3.norm([-0.278,-0.664,0.694])},L:{n:'left external iliac',c:[252.3,176.4,630.9],d:V3.norm([0.281,-0.265,0.922])}},
   labels:LABELS,vol:VOL,lab:null,ready:false}
 };
 CASES.root2.labels=CASES.root.labels;
+CASES.root3.labels=Object.assign({},CASES.root.labels,{3:{n:'Bioprosthetic leaflets',c:[250,225,80]},5:{n:'Sewing-ring (inflow) plane',c:[80,210,230]},10:{n:'Prosthesis frame (metal) or calcium',c:[255,255,255]}});
 const M={cs:CASES.root,c:CASES.root.ref.c.slice(),E:null,P:{},zoom:2.6,wl:250,ww:900,slab:0,labels:false,tool:'nav',drag:null,meas:[],last:null,probe:null,ex:0,checked:false,showRef:false,vessel:'R',ready:false,marks:{}};
 let MV=null,ML=null,MSH=[1,1,1],MVS=1,MPL=1;
 function useCase(cs){MV=cs.vol;ML=cs.lab;MSH=cs.sh;MVS=cs.vs;MPL=MSH[1]*MSH[2];}
@@ -903,7 +913,7 @@ const EX_ROOT=EX_COMMON.concat([{t:'Measure coronary heights',steps:[
  'Scroll the <b>Axial</b> pane toward the aorta (mouse wheel or arrow keys). The readout shows how far above the annulus you are.',
  'Stop at the first slice where the lower edge of the <b>left main</b> ostium opens off the left sinus and press <b>Mark left main</b>.',
  'Keep going for the <b>right coronary</b> ostium off the right (anterior) sinus and press <b>Mark RCA</b>. Heights under about 10–12 mm raise concern for obstruction, especially with bulky leaflets or a narrow sinus.'],
- btns:[['auto','Show the answer plane'],['markLM','Mark left main'],['markRCA','Mark RCA'],['revealCor','Show the true heights']]}]);
+ btns:[['auto','Show the answer plane'],['markLM','Mark left main'],['markRCA','Mark RCA'],['revealCor','Show the answer key']]}]);
 const EX_CTA=EX_COMMON.concat([{t:'Measure an iliac cross-section',steps:[
  'Press <b>Go to right external iliac</b> (or left). The axial pane cuts the vessel obliquely.',
  'In the Coronal and Sagittal panes, rotate the amber line until it crosses the vessel at a right angle.',
@@ -1006,7 +1016,7 @@ async function loadRootCase(key){const cs=CASES[key],[Z,Y,X]=cs.sh,PL_=Y*X;cs.vo
   const rr=rng(4242);for(let i=0;i<cs.vol.length;i+=2){const u=rr()||1e-9,w=rr(),m=Math.sqrt(-2*Math.log(u))*0;cs.vol[i]+=Math.round(m*Math.cos(6.2832*w));if(i+1<cs.vol.length)cs.vol[i+1]+=Math.round(m*Math.sin(6.2832*w));}
   mprReady(key);}
  catch(e){cs.loading=false;cs.vol=null;if(M.cs.key===key)$('#mprLoadMsg').textContent='Could not load '+cs.name+' ('+e.message+'). Reload the page to try again.';}}
-function switchCase(key){const cs=CASES[key];M.cs=cs;cs.lab=key==='cta'?LAB:cs.lab;if(cs.files&&!cs.loading&&!cs.ready){cs.loading=true;loadRootCase(key);}$$('#mCase button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.case===key)));
+function switchCase(key){const cs=CASES[key];M.cs=cs;{const pr=MPRE[cs.win||'cardiac'];mSetWin(pr.l,pr.w);}cs.lab=key==='cta'?LAB:cs.lab;if(cs.files&&!cs.loading&&!cs.ready){cs.loading=true;loadRootCase(key);}$$('#mCase button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.case===key)));
  M.meas=[];M.last=null;M.checked=false;M.marks={};M.ex=Math.min(M.ex,EXS().length-1);
  $('#exList').innerHTML=EXS().map((e,i)=>`<li><button type="button"><span class="n">${String(i+1).padStart(2,'0')}</span><span>${e.t}</span></button></li>`).join('');
  $$('#exList button').forEach((b,i)=>b.addEventListener('click',()=>{M.ex=i;exCard();}));
@@ -1015,7 +1025,7 @@ function switchCase(key){const cs=CASES[key];M.cs=cs;cs.lab=key==='cta'?LAB:cs.l
  setFrame(frameFrom([0,0,1]),cs.ref.c,cs.zoom);exCard();mReadout();}
 
 /* exercises */
-function exCard(){const L=EXS(),i=Math.min(M.ex,L.length-1),e=L[i];$('#exCard').innerHTML=`<div class="num">EXERCISE ${i+1} OF ${L.length} · ${M.cs.name.toUpperCase()}</div><h3>${e.t}</h3><ol class="steps">${e.steps.map(s=>`<li>${s}</li>`).join('')}</ol><div class="exbtns">${e.btns.map(([k,l])=>`<button type="button" class="btn${k==='check'?' primary':''}" data-act="${k}">${l}</button>`).join('')}</div><div class="hinges" id="exFb" aria-live="polite"></div>`;
+function exCard(){const L=EXS(),i=Math.min(M.ex,L.length-1),e=L[i];$('#exCard').innerHTML=`<div class="num">EXERCISE ${i+1} OF ${L.length} · ${M.cs.name.toUpperCase()}</div><h3>${e.t}</h3><ol class="steps">${e.steps.map(s=>`<li>${s}</li>`).join('')}</ol>${M.cs.hints&&M.cs.hints[e.t]?`<p class="casenote" style="margin:4px 0 10px">${M.cs.hints[e.t]}</p>`:''}<div class="exbtns">${e.btns.map(([k,l])=>`<button type="button" class="btn${k==='check'?' primary':''}" data-act="${k}">${l}</button>`).join('')}</div><div class="hinges" id="exFb" aria-live="polite"></div>`;
  $$('#exCard [data-act]').forEach(b=>b.addEventListener('click',()=>exAct(b.dataset.act)));$$('#exList button').forEach((b,j)=>b.setAttribute('aria-current',j===i?'true':'false'));exFeedback();}
 function annGeom(){const R=M.cs.ref,e3=M.E[2],ang=deg(Math.acos(Math.min(1,Math.abs(V3.dot(e3,R.n))))),off=-V3.dot(V3.add(M.c,R.c,-1),R.n);return{ang,off};}
 function exAct(k){
@@ -1040,7 +1050,8 @@ function exFeedback(){const el=$('#exFb');if(!el||!M.E)return;const cs=M.cs,e3=M
  else if(ex==='Read the C-arm angles'){h=planeChip+'<span class="chip neutral">Edge-on views only mean something once the axial pane sits on the annulus</span>';}
  else if(ex==='Measure coronary heights'){h=`<span class="chip ${ang<3?'good':'warn'}">Axial pane ${ang<3?'parallel to':ang.toFixed(1)+'° off'} the annulus · ${off>=0?off.toFixed(1)+' mm above':Math.abs(off).toFixed(1)+' mm below'} it</span>`;
   ['LM','RCA'].forEach(k=>{if(M.marks[k]!==undefined){const d=M.marks[k]-cs.truth[k];h+=`<span class="chip ${Math.abs(d)<1?'good':Math.abs(d)<2?'warn':'bad'}">${k==='LM'?'Left main':'RCA'} marked at ${fmt(M.marks[k])} mm${M.marks.reveal?` · answer key ${fmt(cs.truth[k])} mm`:''}</span>`;}});
-  if(M.marks.reveal)h+=`<span class="chip neutral">Answer key: left main ${cs.truth.LM} mm, RCA ${cs.truth.RCA} mm (lower edge of each ostium)</span>`;}
+  if(M.marks.reveal)h+=`<span class="chip neutral">Answer key: left main ${cs.truth.LM} mm, RCA ${cs.truth.RCA} mm (lower edge of each ostium)</span>`;
+  if(M.marks.reveal&&cs.truth.VTC_LM!==undefined)h+=`<span class="chip neutral">Valve-to-coronary distance to a ${cs.truth.frameD} mm virtual valve: left main ${cs.truth.VTC_LM} mm, RCA ${cs.truth.VTC_RCA} mm · stent posts reach ${cs.truth.postH} mm</span>`;}
  else{const V=cs.vessel[M.vessel],a=deg(Math.acos(Math.min(1,Math.abs(V3.dot(e3,V.d))))),str=(1/Math.cos(a*Math.PI/180)-1)*100;h=`<span class="chip ${a<8?'good':a<20?'warn':'bad'}">Axial plane ${a.toFixed(0)}° from perpendicular to the ${V.n}</span><span class="chip neutral">Lumen stretched up to ${str<1?'<1':str.toFixed(0)}% along one axis</span>`;}
  el.innerHTML=h;}
 
