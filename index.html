@@ -321,7 +321,7 @@ footer a{color:var(--ink)}
 <section class="view" id="view-mpr" data-view="mpr" hidden>
   <div class="sec-head">
     <h2>MPR lab</h2>
-    <p>Three linked planes through the same CT. Move the crosshair, rotate the planes and build a double-oblique view the way structural imagers do on a planning workstation. Start with the gated roots: two real ECG-gated TAVR CTs from different patients, plus a third root with a surgical bioprosthesis for valve-in-valve practice. All are shown at 0.5 mm, each with an answer key measured on its scan.</p>
+    <p>Three linked planes through the same CT. Move the crosshair, rotate the planes and build a double-oblique view the way structural imagers do on a planning workstation. Start with the gated roots: two real ECG-gated TAVR CTs from different patients, plus a third root with a surgical bioprosthesis for valve-in-valve practice. All are shown at 0.5 mm, each with reference measurements taken on its scan.</p>
   </div>
   <div class="mpr-grid">
     <div class="viewer">
@@ -854,11 +854,11 @@ const V3={dot:(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],add:(a,b,s=1)=>[a[0]+b[0]*s,a
 const PC={A:'#F0A43A',B:'#5CC48A',C:'#55C3D3'},PNAME={A:'Axial',B:'Coronal',C:'Sagittal'},PNI={A:2,B:1,C:0},PORIG={A:[0,0,1],B:[0,1,0],C:[1,0,0]};
 const FOVB=260,deg=r=>r*180/Math.PI;
 /* Cases. "root" and "root2" are real ECG-gated TAVR CTs (TotalSegmentator cases s1230 and s1105); "root3" (s0972) has a surgical bioprosthesis: a 12 cm box around the aortic root resampled from 1.5 mm
-   to 0.5 mm, with the same patient's 1.5 mm scan around it. Nothing is modelled; each answer key was measured on its scan.
+   to 0.5 mm, with the same patient's 1.5 mm scan around it. Nothing is modelled; each reference was measured on its scan.
    "cta" is the real body CTA (a different patient); its reference plane is fitted to the dataset's automatic annulus label (approximate). */
 const CASES={
  root:{key:'root',name:'Gated root 1 · 0.5 mm',thvRec:{bev:29,sev:34},loadMsg:'Loading gated root 1',
-  note:'<b>Gated root 1.</b> A real ECG-gated TAVR planning CT from a public dataset (case s1230; a different patient from the body tour). The 12 cm box around the root is resampled from 1.5 mm to 0.5 mm; nothing is drawn in. The cusps, their calcium and both coronary ostia are this patient\'s own, and the same 1.5 mm scan fills the view beyond the box. The answer key was measured on this scan: the annulus plane runs through the three leaflet hinge points, at the level where the cusps just disappear. Look for two teaching points: a low left main (8 mm) and a high RCA origin (20 mm, near the top of the sinus).',sh:[240,240,240],vs:.5,zoom:2.6,exact:true,
+  note:'<b>Gated root 1.</b> A real ECG-gated TAVR planning CT from a public dataset (case s1230; a different patient from the body tour). The 12 cm box around the root is resampled from 1.5 mm to 0.5 mm; nothing is drawn in. The cusps, their calcium and both coronary ostia are this patient\'s own, and the same 1.5 mm scan fills the view beyond the box. The reference measurements were taken on this scan: the annulus plane runs through the three leaflet hinge points, at the level where the cusps just disappear. Look for two teaching points: a low left main (8 mm) and a high RCA origin (20 mm, near the top of the sinus).',sh:[240,240,240],vs:.5,zoom:2.6,exact:true,
   files:[[0,64,4441169],[64,128,4401926],[128,192,4392799],[192,240,3203490]].map((c,i)=>({file:`data/root_${String(i).padStart(2,'0')}.png`,z0:c[0],z1:c[1],bytes:c[2]})),
   fbv:{sh:[174,175,174],vs:1.5,off:[70.688,71.3,70.802],files:[[0,64,2669743],[64,128,2769337],[128,174,1912807]].map((c,i)=>({file:`data/rootfb_${String(i).padStart(2,'0')}.png`,z0:c[0],z1:c[1],bytes:c[2]}))},
   ref:{c:[68.11,60.21,72.58],n:V3.norm([0.7582,0.1996,0.6207])},
@@ -880,11 +880,11 @@ const CASES={
   ref:{c:[70.62,61.61,68.98],n:V3.norm([0.7583,0.1112,0.6423])},
   truth:{max:21.6,min:21.3,area:361,per:67.5,LM:6.5,RCA:22.5,LM_r:21.6,RCA_r:20.0,frameD:23,postH:14.5},
   extraEx:[{t:'Measure the valve-to-coronary distance',steps:[
-   'Press <b>Show the answer plane</b>, then pick <b>BEV</b> or <b>SEV</b> above the panes (23 mm by default). The magenta outline is a schematic virtual valve frame: where the surgical leaflets would be pushed.',
+   'Press <b>Show the reference plane</b>, then pick <b>BEV</b> or <b>SEV</b> above the panes (23 mm by default). The magenta outline is a schematic virtual valve frame: where the surgical leaflets would be pushed.',
    'Press <b>Go to the left main</b>. The axial pane moves up to the lower edge of the left main ostium.',
    'Choose <b>Measure</b> and drag in the <b>Axial</b> pane from the left main ostium (where it leaves the sinus) to the nearest point of the magenta circle. That length is the valve-to-coronary distance (VTC).',
    'Switch to the other valve type and measure again: the self-expanding frame narrows at its waist, so its VTC differs. A VTC under about 4 mm signals a high risk of coronary obstruction.'],
-   btns:[['auto','Show the answer plane'],['goLM','Go to the left main'],['revealVTC','Show the answer key']]}],
+   btns:[['auto','Show the reference plane'],['goLM','Go to the left main'],['revealVTC','Show the reference values']]}],
   labels:null,vol:null,lab:null,fbVol:null,fbLab:null,ready:false},
  cta:{key:'cta',name:'Body CTA · 1.5 mm',thvRec:{bev:26,sev:29},sh:SH,vs:VS,zoom:2,exact:false,
   ref:{c:[207.0,142.3,255.6],n:V3.norm([0.838,0.134,0.528])},
@@ -903,25 +903,25 @@ const EX_COMMON=[
  'Do the same in the <b>Sagittal</b> pane. Each tilt you make changes what the other panes show.',
  'Scroll in the <b>Axial</b> pane until the cusps just disappear. That level is the virtual basal ring, and the axial pane now shows the annulus en face.',
  'Press <b>Check my plane</b>. Feedback then updates live as you adjust.'],
- btns:[['root','Start at the aortic root'],['check','Check my plane'],['auto','Show the answer plane']]},
+ btns:[['root','Start at the aortic root'],['check','Check my plane'],['auto','Show the reference plane']]},
 {t:'Measure the annulus',steps:[
- 'Line up the annular plane first (exercise 1), or press <b>Show the answer plane</b>.',
+ 'Line up the annular plane first (exercise 1), or press <b>Show the reference plane</b>.',
  'Zoom in. Choose <b>Measure</b> and draw the longest diameter across the annulus in the Axial pane, inner edge to inner edge.',
  'Press <b>Use as annulus max</b> in the readout, then draw the shortest diameter at right angles and press <b>Use as annulus min</b>.',
  'Open <b>Cardiac CT</b> to see area, perimeter and the derived diameters.'],
- btns:[['auto','Show the answer plane'],['zoomAnn','Zoom to the annulus']]},
+ btns:[['auto','Show the reference plane'],['zoomAnn','Zoom to the annulus']]},
 {t:'Read the C-arm angles',steps:[
  'Align the axial pane with the annulus (exercise 1).',
  'The chart plots every fluoroscopic angle that shows your axial plane edge-on: the perpendicularity curve.',
  'Any point on the curve gives a coplanar deployment view. Teams often pick a point near the patient\'s usual working views.',
  'Tilt the plane a few degrees and watch the curve move: small CT errors become different C-arm angles.'],
- btns:[['auto','Show the answer plane'],['ref','Show / hide reference curve']]}];
+ btns:[['auto','Show the reference plane'],['ref','Show / hide reference curve']]}];
 const EX_ROOT=EX_COMMON.concat([{t:'Measure coronary heights',steps:[
- 'Press <b>Show the answer plane</b> so the axial pane sits on the annulus.',
+ 'Press <b>Show the reference plane</b> so the axial pane sits on the annulus.',
  'Scroll the <b>Axial</b> pane toward the aorta (mouse wheel or arrow keys). The readout shows how far above the annulus you are.',
  'Stop at the first slice where the lower edge of the <b>left main</b> ostium opens off the left sinus and press <b>Mark left main</b>.',
  'Keep going for the <b>right coronary</b> ostium off the right (anterior) sinus and press <b>Mark RCA</b>. Heights under about 10–12 mm raise concern for obstruction, especially with bulky leaflets or a narrow sinus.'],
- btns:[['auto','Show the answer plane'],['markLM','Mark left main'],['markRCA','Mark RCA'],['revealCor','Show the answer key']]}]);
+ btns:[['auto','Show the reference plane'],['markLM','Mark left main'],['markRCA','Mark RCA'],['revealCor','Show the reference values']]}]);
 const EX_CTA=EX_COMMON.concat([{t:'Measure an iliac cross-section',steps:[
  'Press <b>Go to right external iliac</b> (or left). The axial pane cuts the vessel obliquely.',
  'In the Coronal and Sagittal panes, rotate the amber line until it crosses the vessel at a right angle.',
@@ -1040,7 +1040,7 @@ function drawArm(){
  x.font='600 12px "IBM Plex Mono", monospace';x.fillStyle='#D9E1E6';x.textAlign='left';x.textBaseline='top';x.fillText('C-arm views: axial plane edge-on',8,7);
  x.font='500 11px "IBM Plex Mono", monospace';x.fillStyle='#F0A43A';const fmtB=b=>b>=0?`CRA ${Math.abs(b).toFixed(0)}°`:`CAU ${Math.abs(b).toFixed(0)}°`;
  x.fillText(`RAO 20 ${fmtB(beta(n,-20))} · AP ${fmtB(b0)} · LAO 20 ${fmtB(beta(n,20))}`,8,W-18);
- if(M.showRef){x.fillStyle='#5CC48A';x.textAlign='right';x.fillText(M.cs.exact?'dashed: answer-key annulus':'dashed: dataset annulus',W-8,24);}
+ if(M.showRef){x.fillStyle='#5CC48A';x.textAlign='right';x.fillText(M.cs.exact?'dashed: reference annulus':'dashed: dataset annulus',W-8,24);}
 }
 let mraf=0,mlow=false;
 function mprReq(full){if(full===true)mlow=false;if(!mraf)mraf=requestAnimationFrame(()=>{mraf=0;$('#mZoomLbl').textContent=fmt(M.zoom)+'×';if($('#view-mpr').hidden)return;['A','B','C'].forEach(id=>renderPane(id,mlow&&!!M.drag));drawArm();exFeedback();});}
@@ -1058,7 +1058,7 @@ function switchCase(key){const cs=CASES[key];M.cs=cs;if(M.thv!=='off')M.thvSize=
  M.meas=[];M.last=null;M.checked=false;M.marks={};M.ex=Math.min(M.ex,EXS().length-1);
  $('#exList').innerHTML=EXS().map((e,i)=>`<li><button type="button"><span class="n">${String(i+1).padStart(2,'0')}</span><span>${e.t}</span></button></li>`).join('');
  $$('#exList button').forEach((b,i)=>b.addEventListener('click',()=>{M.ex=i;exCard();}));
- $('#caseNote').innerHTML=key!=='cta'?cs.note:'<b>Real body CTA.</b> Public dataset at 1.5 mm, probably not ECG-gated. The answer plane is fitted to the dataset\'s automatic annulus label, so treat it as approximate.';
+ $('#caseNote').innerHTML=key!=='cta'?cs.note:'<b>Real body CTA.</b> Public dataset at 1.5 mm, probably not ECG-gated. The reference plane is fitted to the dataset\'s automatic annulus label, so treat it as approximate.';
  const ready=cs.ready;M.ready=ready;if(ready)useCase(cs);$('#mprLoading').hidden=ready;if(!ready)$('#mprLoadMsg').textContent=key==='cta'?'Loading the body CTA':cs.loadMsg;
  setFrame(frameFrom([0,0,1]),cs.ref.c,cs.zoom);exCard();mReadout();}
 
@@ -1076,28 +1076,28 @@ function exAct(k){
  else if(k==='ref'){M.showRef=!M.showRef;drawArm();}
  else if(k==='goR'||k==='goL'){M.vessel=k==='goR'?'R':'L';setFrame(frameFrom([0,0,1]),cs.vessel[M.vessel].c,3);}
  else if(k==='alignV'){setFrame(frameFrom(cs.vessel[M.vessel].d),cs.vessel[M.vessel].c,3);}
- else if(k==='markLM'||k==='markRCA'){const g=annGeom();if(g.ang>3){toast('Align the axial pane with the annulus first (Show the answer plane)');return;}M.marks[k==='markLM'?'LM':'RCA']=g.off;}
+ else if(k==='markLM'||k==='markRCA'){const g=annGeom();if(g.ang>3){toast('Align the axial pane with the annulus first (Show the reference plane)');return;}M.marks[k==='markLM'?'LM':'RCA']=g.off;}
  else if(k==='revealCor'){M.marks.reveal=true;}
  else if(k==='goLM'){const a=V3.norm(cs.ref.n.map(q=>-q));setFrame(frameFrom(cs.ref.n),V3.add(cs.ref.c,a,cs.truth.LM),cs.zoom);M.checked=true;if(M.thv==='off')setTHV('bev');mprReq(true);}
  else if(k==='revealVTC'){M.marks.vtc=true;}
  exFeedback();}
 function exFeedback(){const el=$('#exFb');if(!el||!M.E)return;const cs=M.cs,e3=M.E[2],{ang,off}=annGeom(),ex=EXS()[Math.min(M.ex,EXS().length-1)].t;let h='';
- const tol=cs.exact?[3,8]:[5,12],planeChip=`<span class="chip ${ang<tol[0]?'good':ang<tol[1]?'warn':'bad'}">Axial plane ${ang.toFixed(1)}° from the ${cs.exact?'answer-key':'reference'} annulus plane</span>`;
+ const tol=cs.exact?[3,8]:[5,12],planeChip=`<span class="chip ${ang<tol[0]?'good':ang<tol[1]?'warn':'bad'}">Axial plane ${ang.toFixed(1)}° from the ${cs.exact?'reference':'dataset reference'} annulus plane</span>`;
  const offChip=`<span class="chip ${Math.abs(off)<1?'good':Math.abs(off)<3?'warn':'bad'}">${Math.abs(off).toFixed(1)} mm ${off>0?'toward the aorta':'toward the LV'}</span>`;
  if(ex==='Find the annular plane'){h=M.checked?planeChip+offChip:'<span class="chip neutral">Press Check my plane when the axial pane shows the annulus en face</span>';}
- else if(ex==='Measure the annulus'){h=planeChip+offChip;if(cs.exact&&M.last){const len=Math.hypot(...V3.add(M.last.b,M.last.a,-1)),t=cs.truth,near=Math.abs(len-t.max)<Math.abs(len-t.min)?['max',t.max]:['min',t.min],d=len-near[1];h+=`<span class="chip ${Math.abs(d)<1?'good':Math.abs(d)<2?'warn':'bad'}">Your line ${fmt(len)} mm vs answer-key ${near[0]} ${fmt(near[1])} mm (${d>=0?'+':''}${fmt(d)})</span>`;}
-  if(cs.exact)h+=`<span class="chip neutral">Answer key: ${cs.truth.max} × ${cs.truth.min} mm · area ${cs.truth.area} mm² · perimeter ${cs.truth.per} mm</span>`;
-  if(cs.exact&&!cs.viv){const b=thvFit('bev',cs.truth.area),sv=thvFit('sev',cs.truth.per);h+=`<span class="chip neutral">Sizing from the answer key: BEV by area → ${b.length?b.join(' or ')+' mm':'outside the chart'}${b.length>1?' (borderline: both ranges)':''}; SEV by perimeter → ${sv.length?sv.join(' or ')+' mm':'outside the chart'}. Charts: SAPIEN 3 (area) and Evolut PRO+ (perimeter) IFU; follow the current IFU.</span>`;}
+ else if(ex==='Measure the annulus'){h=planeChip+offChip;if(cs.exact&&M.last){const len=Math.hypot(...V3.add(M.last.b,M.last.a,-1)),t=cs.truth,near=Math.abs(len-t.max)<Math.abs(len-t.min)?['max',t.max]:['min',t.min],d=len-near[1];h+=`<span class="chip ${Math.abs(d)<1?'good':Math.abs(d)<2?'warn':'bad'}">Your line ${fmt(len)} mm vs reference ${near[0]} ${fmt(near[1])} mm (${d>=0?'+':''}${fmt(d)})</span>`;}
+  if(cs.exact)h+=`<span class="chip neutral">Reference: ${cs.truth.max} × ${cs.truth.min} mm · area ${cs.truth.area} mm² · perimeter ${cs.truth.per} mm</span>`;
+  if(cs.exact&&!cs.viv){const b=thvFit('bev',cs.truth.area),sv=thvFit('sev',cs.truth.per);h+=`<span class="chip neutral">Sizing from the reference annulus: BEV by area → ${b.length?b.join(' or ')+' mm':'outside the chart'}${b.length>1?' (borderline: both ranges)':''}; SEV by perimeter → ${sv.length?sv.join(' or ')+' mm':'outside the chart'}. Charts: SAPIEN 3 (area) and Evolut PRO+ (perimeter) IFU; follow the current IFU.</span>`;}
   if(cs.viv)h+='<span class="chip neutral">Valve-in-valve sizing follows the surgical valve\'s true inner diameter (ViV app). This dataset does not name the valve, so the overlay defaults to 23 mm devices.</span>';}
  else if(ex==='Read the C-arm angles'){h=planeChip+'<span class="chip neutral">Edge-on views only mean something once the axial pane sits on the annulus</span>';}
  else if(ex==='Measure the valve-to-coronary distance'){const t=cs.truth,G=curTHV(),rec=cs.thvRec||{bev:23,sev:23},vt=g=>t.LM_r-thvR(g,t.LM);
   h=!G?'<span class="chip warn">Pick BEV or SEV above the panes to show a virtual valve</span>':`<span class="chip neutral">Virtual ${G.n}: ${G.long}</span>`;
   h+=`<span class="chip ${ang<3?'good':'warn'}">Axial pane ${ang<3?'parallel to':ang.toFixed(1)+'° off'} the reference plane · ${off>=0?off.toFixed(1)+' mm above':Math.abs(off).toFixed(1)+' mm below'} it</span>`;
-  if(M.last&&G){const len=Math.hypot(...V3.add(M.last.b,M.last.a,-1)),d=len-vt(G);h+=`<span class="chip ${Math.abs(d)<1?'good':Math.abs(d)<2?'warn':'bad'}">Your line ${fmt(len)} mm vs answer-key VTC ${fmt(vt(G))} mm to the left main (${G.n})</span>`;}
-  if(M.marks.vtc){const gb=thvG('bev',rec.bev,!!cs.viv),gs=thvG('sev',rec.sev,!!cs.viv);h+=`<span class="chip neutral">Answer key, left main (ostium ${t.LM} mm up, ${t.LM_r} mm from the valve axis): VTC ${fmt(vt(gb))} mm with ${gb.n}, ${fmt(vt(gs))} mm with ${gs.n}. The RCA arises at ${t.RCA} mm, above the ${t.postH} mm stent posts, so displaced leaflets cannot reach it.</span>`;}}
+  if(M.last&&G){const len=Math.hypot(...V3.add(M.last.b,M.last.a,-1)),d=len-vt(G);h+=`<span class="chip ${Math.abs(d)<1?'good':Math.abs(d)<2?'warn':'bad'}">Your line ${fmt(len)} mm vs reference VTC ${fmt(vt(G))} mm to the left main (${G.n})</span>`;}
+  if(M.marks.vtc){const gb=thvG('bev',rec.bev,!!cs.viv),gs=thvG('sev',rec.sev,!!cs.viv);h+=`<span class="chip neutral">Reference, left main (ostium ${t.LM} mm up, ${t.LM_r} mm from the valve axis): VTC ${fmt(vt(gb))} mm with ${gb.n}, ${fmt(vt(gs))} mm with ${gs.n}. The RCA arises at ${t.RCA} mm, above the ${t.postH} mm stent posts, so displaced leaflets cannot reach it.</span>`;}}
  else if(ex==='Measure coronary heights'){h=`<span class="chip ${ang<3?'good':'warn'}">Axial pane ${ang<3?'parallel to':ang.toFixed(1)+'° off'} the annulus · ${off>=0?off.toFixed(1)+' mm above':Math.abs(off).toFixed(1)+' mm below'} it</span>`;
-  ['LM','RCA'].forEach(k=>{if(M.marks[k]!==undefined){const d=M.marks[k]-cs.truth[k];h+=`<span class="chip ${Math.abs(d)<1?'good':Math.abs(d)<2?'warn':'bad'}">${k==='LM'?'Left main':'RCA'} marked at ${fmt(M.marks[k])} mm${M.marks.reveal?` · answer key ${fmt(cs.truth[k])} mm`:''}</span>`;}});
-  if(M.marks.reveal)h+=`<span class="chip neutral">Answer key: left main ${cs.truth.LM} mm, RCA ${cs.truth.RCA} mm (lower edge of each ostium)</span>`;
+  ['LM','RCA'].forEach(k=>{if(M.marks[k]!==undefined){const d=M.marks[k]-cs.truth[k];h+=`<span class="chip ${Math.abs(d)<1?'good':Math.abs(d)<2?'warn':'bad'}">${k==='LM'?'Left main':'RCA'} marked at ${fmt(M.marks[k])} mm${M.marks.reveal?` · reference ${fmt(cs.truth[k])} mm`:''}</span>`;}});
+  if(M.marks.reveal)h+=`<span class="chip neutral">Reference: left main ${cs.truth.LM} mm, RCA ${cs.truth.RCA} mm (lower edge of each ostium)</span>`;
   if(M.marks.reveal&&cs.truth.postH!==undefined)h+=`<span class="chip neutral">The stent posts reach ${cs.truth.postH} mm: the left main sits below their tips, the RCA above them. Measure the valve-to-coronary distance in the next exercise.</span>`;}
  else{const V=cs.vessel[M.vessel],a=deg(Math.acos(Math.min(1,Math.abs(V3.dot(e3,V.d))))),str=(1/Math.cos(a*Math.PI/180)-1)*100;h=`<span class="chip ${a<8?'good':a<20?'warn':'bad'}">Axial plane ${a.toFixed(0)}° from perpendicular to the ${V.n}</span><span class="chip neutral">Lumen stretched up to ${str<1?'<1':str.toFixed(0)}% along one axis</span>`;}
  el.innerHTML=h;}
