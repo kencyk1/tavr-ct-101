@@ -2,14 +2,24 @@
 
 Hands-on CT basics for structural heart advanced practice providers. Learners work on a real, publicly released CT angiogram, from the neck to the femoral bifurcation, in the browser. Nothing to install.
 
-Companion to [LubDubAPP Guide](https://lubdubappguide.com/).
+Live at **https://ct.lubdubappguide.com/**. Companion to [LubDubAPP Guide](https://lubdubappguide.com/).
+
+## Screens
+
+The page is a dark, reading-room style workstation that fits the screen it is on:
+
+- **Desktop and landscape tablet:** tool rail on the left, the image (or the four MPR panes) filling the middle, and the teaching card and stop list in a side panel.
+- **Portrait tablet:** tools across the top, a large image, and the teaching card in a sheet you pull up from the bottom.
+- **Phone:** section tabs along the bottom, tools above them, and secondary controls (window, zoom, labels, case and valve overlay) behind **More**. The MPR lab shows one large pane with three live thumbnails; tap a thumbnail to swap it in, and use **Slice − / +** to move through the large pane.
+
+How CT works, Cardiac CT, Access check and the Quiz are ordinary scrolling pages.
 
 ## Sections
 
 | Section | What learners do |
 |---|---|
 | **Scroll the scan** | Scroll a real CTA in axial, coronal and sagittal planes. Change the window, probe Hounsfield units, measure vessels, and follow 16 TAVR-focused teaching stops from the carotids to the femoral bifurcation. About 80 organs, vessels, bones and muscles are named on the image, including all four heart chambers, the RVOT, the interventricular septum and the tricuspid, pulmonary and mitral valve planes. A self-test mode hides the names. |
-| **MPR lab** | Three linked, rotatable planes, the way structural imagers work. Exercises: find the annular plane, measure the annulus, read the C-arm perpendicularity curve, and measure coronary heights. Each exercise is graded against known answers. |
+| **MPR lab** | Three linked, rotatable planes, the way structural imagers work. Exercises: find the annular plane, measure the annulus, read the C-arm perpendicularity curve, and measure coronary heights. Each exercise gives feedback against reference measurements taken on the scan. |
 | **How CT works** | Hounsfield units, windowing, calcium blooming, image orientation, and the TAVR CT protocol. |
 | **Cardiac CT** | ECG gating, double-oblique alignment, annulus area/perimeter calculations, and coronary obstruction risk. |
 | **Access check** | Sheath-to-femoral artery ratio (SFAR) with calcium and tortuosity modifiers. |
