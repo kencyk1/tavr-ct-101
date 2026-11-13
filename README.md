@@ -14,6 +14,8 @@ The page is a dark, reading-room style workstation that fits the screen it is on
 
 How CT works, Cardiac CT, Access check and the Quiz are ordinary scrolling pages.
 
+Access check opens with an **access reconstruction**: a straightened view of each iliofemoral path on a centerline, a cross-section square to the vessel for measuring the minimal lumen, and a reference diameter profile against the sheath size (see `tools/access`).
+
 ## Sections
 
 | Section | What learners do |
