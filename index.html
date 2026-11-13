@@ -321,14 +321,15 @@ footer a{color:var(--ink)}
 <section class="view" id="view-mpr" data-view="mpr" hidden>
   <div class="sec-head">
     <h2>MPR lab</h2>
-    <p>Three linked planes through the same CT. Move the crosshair, rotate the planes and build a double-oblique view the way structural imagers do on a planning workstation. Start with the gated root: a real ECG-gated TAVR CT, shown at 0.5 mm, with an answer key measured on the scan.</p>
+    <p>Three linked planes through the same CT. Move the crosshair, rotate the planes and build a double-oblique view the way structural imagers do on a planning workstation. Start with the gated roots: two real ECG-gated TAVR CTs from different patients, shown at 0.5 mm, each with an answer key measured on the scan.</p>
   </div>
   <div class="mpr-grid">
     <div class="viewer">
       <div class="caserow">
         <div class="presets"><span class="label">Case</span>
           <div class="seg" id="mCase">
-            <button type="button" data-case="root" aria-pressed="true">Gated root · 0.5 mm</button>
+            <button type="button" data-case="root" aria-pressed="true">Gated root 1 · 0.5 mm</button>
+            <button type="button" data-case="root2" aria-pressed="false">Gated root 2 · 0.5 mm</button>
             <button type="button" data-case="cta" aria-pressed="false">Body CTA · 1.5 mm</button>
           </div>
         </div>
@@ -355,7 +356,7 @@ footer a{color:var(--ink)}
         <div class="pane" style="--pc:#5CC48A"><canvas id="mprB" tabindex="0" aria-label="Coronal plane"></canvas></div>
         <div class="pane" style="--pc:#55C3D3"><canvas id="mprC" tabindex="0" aria-label="Sagittal plane"></canvas></div>
         <div class="pane" style="--pc:#26323b"><canvas id="mprArm" aria-label="C-arm angles that show the axial plane edge-on"></canvas></div>
-        <div class="loading" id="mprLoading"><div><span id="mprLoadMsg">Loading the gated root case</span><small>Opens as soon as the selected case has loaded</small></div></div>
+        <div class="loading" id="mprLoading"><div><span id="mprLoadMsg">Loading gated root 1</span><small>Opens as soon as the selected case has loaded</small></div></div>
       </div>
       <div class="readout" id="mReadout" aria-live="polite"></div>
       <div class="presets" id="mPresets"><span class="label">Window</span></div>
@@ -585,7 +586,7 @@ footer a{color:var(--ink)}
 <footer><div class="wrap">
   <p>Created by <a href="https://www.linkedin.com/in/ken-chan-6774411a5/" target="_blank" rel="noopener">Ken Chan</a>, ACNPC-AG, CCK, RCIS, AACC. Built with the help of AI (Claude, Anthropic).</p>
   <p>Companion to <a href="https://lubdubappguide.com/" target="_blank" rel="noopener">LubDubAPP Guide</a>. Not for clinical decision-making; size devices from the manufacturer's instructions for use. Open access for non-commercial education.</p>
-  <p>CT data: case ct1349 from the <a href="https://zenodo.org/records/16274177" target="_blank" rel="noopener">TAVRP-PL dataset</a> (CC BY 4.0), derived from the <a href="https://zenodo.org/records/6802613" target="_blank" rel="noopener">TotalSegmentator dataset</a> (Wasserthal et al., CC BY 4.0). The MPR lab's gated root is case s1230 of the <a href="https://zenodo.org/records/10047292" target="_blank" rel="noopener">TotalSegmentator dataset v2</a> (CC BY 4.0), an ECG-gated TAVR planning CT of a different patient. Cropped, re-oriented and compressed for the web; outlines are the dataset's automatically generated labels and are approximate. Organ names come from automatic segmentation with <a href="https://github.com/wasserth/TotalSegmentator" target="_blank" rel="noopener">TotalSegmentator</a> (Wasserthal et al., <i>Radiology: Artificial Intelligence</i> 2023) and may be imperfect at organ edges. Heart chambers (RA, RV, LA, LV and myocardium) come from the <a href="https://github.com/murong-xu/CADS" target="_blank" rel="noopener">CADS</a> open model (Xu et al., <i>Nature Communications</i> 2026; weights CC BY-SA 4.0); the RVOT, septum and valve-plane outlines are derived from those chambers and are approximate.</p>
+  <p>CT data: case ct1349 from the <a href="https://zenodo.org/records/16274177" target="_blank" rel="noopener">TAVRP-PL dataset</a> (CC BY 4.0), derived from the <a href="https://zenodo.org/records/6802613" target="_blank" rel="noopener">TotalSegmentator dataset</a> (Wasserthal et al., CC BY 4.0). The MPR lab's gated roots are cases s1230 and s1105 of the <a href="https://zenodo.org/records/10047292" target="_blank" rel="noopener">TotalSegmentator dataset v2</a> (CC BY 4.0), ECG-gated TAVR planning CTs of two other patients. Cropped, re-oriented and compressed for the web; outlines are the dataset's automatically generated labels and are approximate. Organ names come from automatic segmentation with <a href="https://github.com/wasserth/TotalSegmentator" target="_blank" rel="noopener">TotalSegmentator</a> (Wasserthal et al., <i>Radiology: Artificial Intelligence</i> 2023) and may be imperfect at organ edges. Heart chambers (RA, RV, LA, LV and myocardium) come from the <a href="https://github.com/murong-xu/CADS" target="_blank" rel="noopener">CADS</a> open model (Xu et al., <i>Nature Communications</i> 2026; weights CC BY-SA 4.0); the RVOT, septum and valve-plane outlines are derived from those chambers and are approximate.</p>
 </div></footer>
 <div class="toast" id="toast" hidden></div>
 
@@ -849,22 +850,31 @@ const V3={dot:(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],add:(a,b,s=1)=>[a[0]+b[0]*s,a
  rot:(x,k,t)=>{const c=Math.cos(t),s=Math.sin(t),kx=V3.cross(k,x),kd=V3.dot(k,x)*(1-c);return[x[0]*c+kx[0]*s+k[0]*kd,x[1]*c+kx[1]*s+k[1]*kd,x[2]*c+kx[2]*s+k[2]*kd];}};
 const PC={A:'#F0A43A',B:'#5CC48A',C:'#55C3D3'},PNAME={A:'Axial',B:'Coronal',C:'Sagittal'},PNI={A:2,B:1,C:0},PORIG={A:[0,0,1],B:[0,1,0],C:[1,0,0]};
 const FOVB=260,deg=r=>r*180/Math.PI;
-/* Cases. "root" is a real ECG-gated TAVR CT (TotalSegmentator case s1230): a 12 cm box around the aortic root resampled from 1.5 mm
-   to 0.5 mm, with the same patient's 1.5 mm scan around it. Nothing is modelled; the answer key was measured on this scan.
+/* Cases. "root" and "root2" are real ECG-gated TAVR CTs (TotalSegmentator cases s1230 and s1105): a 12 cm box around the aortic root resampled from 1.5 mm
+   to 0.5 mm, with the same patient's 1.5 mm scan around it. Nothing is modelled; each answer key was measured on its scan.
    "cta" is the real body CTA (a different patient); its reference plane is fitted to the dataset's automatic annulus label (approximate). */
 const CASES={
- root:{key:'root',name:'Gated root · 0.5 mm',sh:[240,240,240],vs:.5,zoom:2.6,exact:true,
+ root:{key:'root',name:'Gated root 1 · 0.5 mm',loadMsg:'Loading gated root 1',
+  note:'<b>Gated root 1.</b> A real ECG-gated TAVR planning CT from a public dataset (case s1230; a different patient from the body tour). The 12 cm box around the root is resampled from 1.5 mm to 0.5 mm; nothing is drawn in. The cusps, their calcium and both coronary ostia are this patient\'s own, and the same 1.5 mm scan fills the view beyond the box. The answer key was measured on this scan with the annulus at the three cusp nadirs. Look for two teaching points: a low left main and a high RCA take-off near the sinotubular junction.',sh:[240,240,240],vs:.5,zoom:2.6,exact:true,
   files:[[0,64,4424206],[64,128,4398372],[128,192,4384968],[192,240,3187757]].map((c,i)=>({file:`data/root_${String(i).padStart(2,'0')}.png`,z0:c[0],z1:c[1],bytes:c[2]})),
   fbv:{sh:[174,174,175],vs:1.5,off:[71.333,70.775,70.755],files:[[0,64,2663202],[64,128,2760912],[128,174,1909187]].map((c,i)=>({file:`data/rootfb_${String(i).padStart(2,'0')}.png`,z0:c[0],z1:c[1],bytes:c[2]}))},
   ref:{c:[68.26,64.0,71.31],n:V3.norm([0.7177,0.3927,0.575])},
   truth:{max:30.3,min:22.7,area:540,per:84.7,LM:6.0,RCA:26.0},
   labels:Object.assign({},LABELS,{1:{n:'Ascending aorta',c:[235,90,80]},2:{n:'Aortic root (sinuses of Valsalva)',c:[245,165,60]},3:{n:'Aortic valve cusp',c:[250,225,80]},4:{n:'Left ventricle',c:[90,215,140]},5:{n:'Virtual basal ring (annulus)',c:[80,210,230]},7:{n:'LV outflow tract',c:[120,200,230]},8:{n:'Left main / LAD / LCx',c:[120,220,140]},9:{n:'Right coronary artery',c:[110,150,245]},10:{n:'Calcium',c:[255,255,255]}}),
   vol:null,lab:null,fbVol:null,fbLab:null,ready:false},
+ root2:{key:'root2',name:'Gated root 2 · 0.5 mm',loadMsg:'Loading gated root 2',sh:[240,240,240],vs:.5,zoom:2.6,exact:true,
+  note:'<b>Gated root 2.</b> A second real ECG-gated TAVR planning CT (case s1105, another patient), prepared the same way: 0.5 mm box around the root, nothing drawn in, the same 1.5 mm scan beyond it. Practice points: a small, oval annulus; bulky calcium at the left-coronary hinge that runs into the LVOT (trace the annulus smoothly as if the calcium were not there); a short root with the sinotubular junction about 18 mm above the annulus; and the left main at about 8 mm.',
+  files:[[0,64,4330870],[64,128,4319618],[128,192,4179021],[192,240,2999580]].map((c,i)=>({file:`data/root2_${String(i).padStart(2,'0')}.png`,z0:c[0],z1:c[1],bytes:c[2]})),
+  fbv:{sh:[174,175,174],vs:1.5,off:[70.736,71.027,70.587],files:[[0,64,2424432],[64,128,2513414],[128,174,1681867]].map((c,i)=>({file:`data/root2fb_${String(i).padStart(2,'0')}.png`,z0:c[0],z1:c[1],bytes:c[2]}))},
+  ref:{c:[69.71,62.13,70.07],n:V3.norm([0.6837,0.2902,0.6696])},
+  truth:{max:27.6,min:20.3,area:439,per:76.8,LM:8.0,RCA:15.5},
+  labels:null,vol:null,lab:null,fbVol:null,fbLab:null,ready:false},
  cta:{key:'cta',name:'Body CTA · 1.5 mm',sh:SH,vs:VS,zoom:2,exact:false,
   ref:{c:[207.0,142.3,255.6],n:V3.norm([0.838,0.134,0.528])},
   vessel:{R:{n:'right external iliac',c:[140.1,196.0,631.1],d:V3.norm([-0.278,-0.664,0.694])},L:{n:'left external iliac',c:[252.3,176.4,630.9],d:V3.norm([0.281,-0.265,0.922])}},
   labels:LABELS,vol:VOL,lab:null,ready:false}
 };
+CASES.root2.labels=CASES.root.labels;
 const M={cs:CASES.root,c:CASES.root.ref.c.slice(),E:null,P:{},zoom:2.6,wl:250,ww:900,slab:0,labels:false,tool:'nav',drag:null,meas:[],last:null,probe:null,ex:0,checked:false,showRef:false,vessel:'R',ready:false,marks:{}};
 let MV=null,ML=null,MSH=[1,1,1],MVS=1,MPL=1;
 function useCase(cs){MV=cs.vol;ML=cs.lab;MSH=cs.sh;MVS=cs.vs;MPL=MSH[1]*MSH[2];}
@@ -900,7 +910,7 @@ const EX_CTA=EX_COMMON.concat([{t:'Measure an iliac cross-section',steps:[
  'Measure the lumen in the Axial pane and send it to Access check.',
  'Compare with <b>Align to the vessel</b>. An oblique cut stretches the lumen along one axis by 1 / cos(angle).'],
  btns:[['goR','Go to right external iliac'],['goL','Go to left external iliac'],['alignV','Align to the vessel']]}]);
-const EXS=()=>M.cs.key==='root'?EX_ROOT:EX_CTA;
+const EXS=()=>M.cs.key==='cta'?EX_CTA:EX_ROOT;
 function frameFrom(e3){e3=V3.norm(e3);let e2=V3.add([0,1,0],e3,-e3[1]);if(Math.hypot(e2[0],e2[1],e2[2])<1e-3)e2=V3.add([0,0,1],e3,-e3[2]);e2=V3.norm(e2);const e1=V3.norm(V3.cross(e2,e3));return[e1,e2,e3];}
 function setFrame(E,c,zoom){M.E=E.map(v=>v.slice());if(c)M.c=c.slice();if(zoom)M.zoom=zoom;const[e1,e2,e3]=M.E;M.P={A:{u:e1.slice(),v:e2.slice()},B:{u:e1.slice(),v:e3.slice()},C:{u:e2.slice(),v:e3.slice()}};for(const k in M.P)M.P[k].vc=M.c.slice();mprReq(true);}
 const nOf=id=>M.E[PNI[id]];
@@ -990,18 +1000,18 @@ function mprReady(key){CASES[key].ready=true;if(M.cs.key===key){useCase(M.cs);M.
 async function loadStrips(files,PL_,vol,lab){await Promise.all(files.map(async c=>{const r=await fetch(c.file);if(!r.ok)throw new Error(`${c.file}: HTTP ${r.status}`);const bmp=await createImageBitmap(await r.blob(),{colorSpaceConversion:'none',premultiplyAlpha:'none'});
    const cn=document.createElement('canvas');cn.width=bmp.width;cn.height=bmp.height;const cx=cn.getContext('2d',{willReadFrequently:true});cx.drawImage(bmp,0,0);const d=cx.getImageData(0,0,bmp.width,bmp.height).data,n=(c.z1-c.z0)*PL_,base=c.z0*PL_;
    for(let k=0,p=0;k<n;k++,p+=4){vol[base+k]=((d[p]<<8)|d[p+1])-1024;lab[base+k]=d[p+2];}}));}
-async function loadRootCase(){const cs=CASES.root,[Z,Y,X]=cs.sh,PL_=Y*X;cs.vol=new Int16Array(Z*PL_);cs.lab=new Uint8Array(Z*PL_);
+async function loadRootCase(key){const cs=CASES[key],[Z,Y,X]=cs.sh,PL_=Y*X;cs.vol=new Int16Array(Z*PL_);cs.lab=new Uint8Array(Z*PL_);
  try{const f=cs.fbv,fv=f?new Int16Array(f.sh[0]*f.sh[1]*f.sh[2]):null,fl=f?new Uint8Array(fv.length):null;
   await Promise.all([loadStrips(cs.files,PL_,cs.vol,cs.lab),f?loadStrips(f.files,f.sh[1]*f.sh[2],fv,fl):null]);if(f){cs.fbVol=fv;cs.fbLab=fl;}
   const rr=rng(4242);for(let i=0;i<cs.vol.length;i+=2){const u=rr()||1e-9,w=rr(),m=Math.sqrt(-2*Math.log(u))*0;cs.vol[i]+=Math.round(m*Math.cos(6.2832*w));if(i+1<cs.vol.length)cs.vol[i+1]+=Math.round(m*Math.sin(6.2832*w));}
-  mprReady('root');}
- catch(e){if(M.cs.key==='root')$('#mprLoadMsg').textContent='Could not load the gated root case ('+e.message+'). Reload the page to try again.';}}
-function switchCase(key){const cs=CASES[key];M.cs=cs;cs.lab=key==='cta'?LAB:cs.lab;$$('#mCase button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.case===key)));
+  mprReady(key);}
+ catch(e){cs.loading=false;cs.vol=null;if(M.cs.key===key)$('#mprLoadMsg').textContent='Could not load '+cs.name+' ('+e.message+'). Reload the page to try again.';}}
+function switchCase(key){const cs=CASES[key];M.cs=cs;cs.lab=key==='cta'?LAB:cs.lab;if(cs.files&&!cs.loading&&!cs.ready){cs.loading=true;loadRootCase(key);}$$('#mCase button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.case===key)));
  M.meas=[];M.last=null;M.checked=false;M.marks={};M.ex=Math.min(M.ex,EXS().length-1);
  $('#exList').innerHTML=EXS().map((e,i)=>`<li><button type="button"><span class="n">${String(i+1).padStart(2,'0')}</span><span>${e.t}</span></button></li>`).join('');
  $$('#exList button').forEach((b,i)=>b.addEventListener('click',()=>{M.ex=i;exCard();}));
- $('#caseNote').innerHTML=key==='root'?'<b>Gated root.</b> A real ECG-gated TAVR planning CT from a public dataset (a different patient from the body tour). The 12 cm box around the root is resampled from 1.5 mm to 0.5 mm; nothing is drawn in. The cusps, their calcium and both coronary ostia are this patient\'s own, and the same 1.5 mm scan fills the view beyond the box. The answer key was measured on this scan with the annulus at the three cusp nadirs. Look for two teaching points: a low left main and a high RCA take-off near the sinotubular junction.':'<b>Real body CTA.</b> Public dataset at 1.5 mm, probably not ECG-gated. The answer plane is fitted to the dataset\'s automatic annulus label, so treat it as approximate.';
- const ready=cs.ready;M.ready=ready;if(ready)useCase(cs);$('#mprLoading').hidden=ready;if(!ready)$('#mprLoadMsg').textContent=key==='cta'?'Loading the body CTA':'Loading the gated root case';
+ $('#caseNote').innerHTML=key!=='cta'?cs.note:'<b>Real body CTA.</b> Public dataset at 1.5 mm, probably not ECG-gated. The answer plane is fitted to the dataset\'s automatic annulus label, so treat it as approximate.';
+ const ready=cs.ready;M.ready=ready;if(ready)useCase(cs);$('#mprLoading').hidden=ready;if(!ready)$('#mprLoadMsg').textContent=key==='cta'?'Loading the body CTA':cs.loadMsg;
  setFrame(frameFrom([0,0,1]),cs.ref.c,cs.zoom);exCard();mReadout();}
 
 /* exercises */
@@ -1081,7 +1091,7 @@ $('#mReset').onclick=()=>{if(!M.ready)return;setFrame(frameFrom([0,0,1]),M.c,M.z
 $('#mLbl').addEventListener('change',e=>{M.labels=e.target.checked;mprReq(true);});
 $('#mSlab').addEventListener('input',e=>{M.slab=+e.target.value;$('#mSlabO').textContent=M.slab?M.slab+' mm':'Off';mprReq(true);});
 $$('#mCase button').forEach(b=>b.addEventListener('click',()=>switchCase(b.dataset.case)));
-switchCase('root');loadRootCase();
+switchCase('root');
 
 
 /* ======================= BASICS ======================= */

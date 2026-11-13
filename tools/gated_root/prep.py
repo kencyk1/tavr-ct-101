@@ -3,7 +3,7 @@
 # world = (index + 0.5) * 1.5 mm) and merges TotalSegmentator (fast) + CADS heart labels into page label ids.
 import numpy as np, nibabel as nib, json, sys
 from totalsegmentator.map_to_binary import class_map
-D = '/home/claude/s1230'
+import os; D = os.environ.get('CASE_DIR', '/home/claude/s1230')
 tov = lambda x: np.ascontiguousarray(x.transpose(2, 1, 0)[::-1, ::-1, ::-1])
 im = nib.load(D + '/ct.nii.gz'); assert nib.aff2axcodes(im.affine) == ('R', 'A', 'S')
 W = tov(np.asanyarray(im.dataobj).astype(np.int16)); np.save(D + '/W.npy', W)
@@ -21,4 +21,4 @@ for nm, gid in (('iliac_artery_right', 7), ('iliac_artery_left', 6)):
     if nm in inv: lab[ts == inv[nm]] = gid
 np.save(D + '/lab_ts.npy', lab)
 print(W.shape, {int(k): int(v) for k, v in zip(*np.unique(lab, return_counts=True)) if k in (1, 22, 66, 6, 7)})
-z = np.where((lab == 22).any((1, 2)))[0]; print('heart z', z.min(), z.max(), ' RAS k range', 485 - z.max(), 485 - z.min())
+z = np.where((lab == 22).any((1, 2)))[0]; print('heart z', z.min(), z.max(), ' RAS k range', W.shape[0] - 1 - z.max(), W.shape[0] - 1 - z.min())

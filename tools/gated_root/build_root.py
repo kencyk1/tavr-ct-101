@@ -5,11 +5,14 @@ Writes data/root_*.png (0.5 mm cube), data/rootfb_*.png (1.5 mm surroundings) an
 import numpy as np, json, os, sys
 from scipy.ndimage import map_coordinates, gaussian_filter, gaussian_filter1d, median_filter, label as cc, binary_dilation
 from PIL import Image
-D = '/home/claude/s1230'; OUT = sys.argv[1] if len(sys.argv) > 1 else '/home/claude/ctp/data'
+import os; D = os.environ.get('CASE_DIR', '/home/claude/s1230'); OUT = sys.argv[1] if len(sys.argv) > 1 else '/home/claude/ctp/data'
 W = np.load(D + '/W.npy').astype(np.float32); LAB = np.load(D + '/lab.npy')
 F = json.load(open(D + '/frame_ann.json')); thr = F['thr']
 c_w = np.array(F['c']); A = np.array(F['A']); u1 = np.array(F['u1']); u2 = np.array(F['u2'])
 cus = json.load(open(D + '/cusps.json'))['cus']
+_ad = lambda a, b: abs(((a - b + 180) % 360) - 180)
+cusR = min(cus, key=lambda q: _ad(q, 0)); cusL = min([q for q in cus if q != cusR], key=lambda q: _ad(q, 120))
+print('cusp centres', [round(q) for q in cus], 'RCC', round(cusR), 'LCC', round(cusL))
 N, VS = 240, 0.5; Lc = N * VS
 O = c_w + A * 14 - Lc / 2; c = c_w - O
 ax = ((np.arange(N) + .5) * VS).astype(np.float32); Z, Y, X = np.meshgrid(ax, ax, ax, indexing='ij')
@@ -78,7 +81,7 @@ br = up > 200
 thick = maximum_filter(distance_transform_edt(br) * VS, size=9)
 thin = br & (thick <= 2.8) & ~chamb & ~lumT
 angd = lambda a, b: np.abs(((a - b + 180) % 360) - 180)
-SIDES = {'L': dict(th=cus[0], tw=40, h=(0, 20), lv=8), 'R': dict(th=cus[2] - 10, tw=45, h=(10, 40), lv=9)}
+SIDES = {'L': dict(th=cusL, tw=40, h=(0, 24), lv=8), 'R': dict(th=cusR - 10, tw=45, h=(4, 40), lv=9)}
 cor = np.zeros(up.shape, np.uint8); heights = {}
 for side, P_ in SIDES.items():
     sect = (angd(THd, P_['th']) < P_['tw']) & (H > P_['h'][0]) & (H < P_['h'][1])
@@ -135,7 +138,7 @@ perim = float(np.sum(np.hypot(np.diff(np.append(x, x[0])), np.diff(np.append(y, 
 # Feret (caliper) diameters of the real contour, for reference
 angs = np.radians(np.arange(0, 180, 0.5)); proj = np.cos(angs)[:, None] * x[None] + np.sin(angs)[:, None] * y[None]; fer = proj.max(1) - proj.min(1)
 cc_cube = cen - O
-T = dict(case='s1230', cube_origin_world=[float(q) for q in O], shape=[N, N, N], voxel_mm=VS, c=[round(float(q), 2) for q in cc_cube],
+T = dict(case=os.path.basename(D), cube_origin_world=[float(q) for q in O], shape=[N, N, N], voxel_mm=VS, c=[round(float(q), 2) for q in cc_cube],
          n_toLV=[round(float(-q), 4) for q in A], max=round(2 * sa, 1), min=round(2 * sb, 1), area=round(float(Ar)), per=round(perim, 1),
          feret_max=round(float(fer.max()), 1), feret_min=round(float(fer.min()), 1),
          LM=round(heights.get('L', np.nan), 1), RCA=round(heights.get('R', np.nan), 1),
@@ -150,13 +153,13 @@ def strips(v16, ll, prefix, nzs=64):
         rgb = np.stack([(cu >> 8).astype(np.uint8), (cu & 255).astype(np.uint8), l_], -1); fn = f'{OUT}/{prefix}_{i:02d}.png'
         Image.fromarray(rgb, 'RGB').save(fn, optimize=True, compress_level=9); files.append([z0, z1, os.path.getsize(fn)])
     return files
-f_root = strips(vol, lab, 'root')
+PFX = os.environ.get('PREFIX', 'root'); f_root = strips(vol, lab, PFX)
 # ---- 1.5 mm surroundings for panning beyond the cube (same patient) ----
 ctr = (O + Lc / 2); half = 130
 lo = np.maximum(np.floor((ctr - half) / 1.5).astype(int), 0); hi_ = np.minimum(np.ceil((ctr + half) / 1.5).astype(int), np.array(W.shape[::-1]))
 fbv = np.clip(W[lo[2]:hi_[2], lo[1]:hi_[1], lo[0]:hi_[0]], -1024, 3071).astype(np.int16); fbl = LAB[lo[2]:hi_[2], lo[1]:hi_[1], lo[0]:hi_[0]].copy()
 fbl[np.isin(fbl, [5, 7, 3])] = 0
-f_fb = strips(fbv, fbl, 'rootfb')
+f_fb = strips(fbv, fbl, PFX + 'fb')
 Fo = lo * 1.5
 meta = dict(root_files=f_root, fb_files=f_fb, fb_shape=list(fbv.shape), fb_off=[round(float(q), 3) for q in (O - Fo)])
 json.dump(meta, open(D + '/root_real_files.json', 'w')); print(json.dumps(meta)); print('MB', sum(f[2] for f in f_root) / 1e6, sum(f[2] for f in f_fb) / 1e6)

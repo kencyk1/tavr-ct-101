@@ -1,7 +1,7 @@
 # Merge CADS heart labels (task 553) into the s1230 label volume, same rules as /home/claude/seg/chambers3.py.
 import numpy as np, nibabel as nib, sys
 from scipy.ndimage import distance_transform_edt, label as cc
-D = '/home/claude/s1230'; k0 = int(sys.argv[1])
+import os; D = os.environ.get('CASE_DIR', '/home/claude/s1230'); k0 = int(sys.argv[1])
 tov = lambda x: np.ascontiguousarray(x.transpose(2, 1, 0)[::-1, ::-1, ::-1])
 W = np.load(D + '/W.npy').astype(np.float32); lab = np.load(D + '/lab_ts.npy')
 c = np.asanyarray(nib.load(D + '/cads.nii.gz').dataobj).astype(np.uint8)

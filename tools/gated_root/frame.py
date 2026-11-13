@@ -3,7 +3,7 @@
 import numpy as np, json, sys
 from scipy.ndimage import map_coordinates, gaussian_filter, binary_dilation
 from PIL import Image, ImageDraw
-D = '/home/claude/s1230'
+import os; D = os.environ.get('CASE_DIR', '/home/claude/s1230')
 W = np.load(D + '/W.npy').astype(np.float32); lab = np.load(D + '/lab.npy')
 src = gaussian_filter(W, 0.5)
 def sampW(P, order=1):
@@ -33,9 +33,9 @@ def section(c, A, h, u1, u2, it=4):
         pts = np.stack([r * np.cos(TH), r * np.sin(TH)], 1); o = o + pts.mean(0)
     return cen, r
 c, A = c0.copy(), n.copy()
-for rep in range(3):
+for rep in range(int(os.environ.get("REPS", 3))):
     u1, u2 = frame(A)
-    cens = np.array([section(c, A, h, u1, u2)[0] for h in np.arange(-10, 14.1, 1)])
+    cens = np.array([section(c, A, h, u1, u2)[0] for h in np.arange(float(os.environ.get('FIT_LO', -10)), float(os.environ.get('FIT_HI', 14)) + 0.1, 1)])
     m = cens.mean(0); _, _, Vt = np.linalg.svd(cens - m); A2 = Vt[0] if Vt[0] @ A > 0 else -Vt[0]
     c = m + A2 * ((c - m) @ A2); print('rep', rep, 'axis change deg', round(float(np.degrees(np.arccos(min(1, A2 @ A)))), 2)); A = A2
 u1, u2 = frame(A)

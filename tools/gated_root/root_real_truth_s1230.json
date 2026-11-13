@@ -31,5 +31,6 @@
  "RCA": 26.0,
  "sinus_d": 39.0,
  "stj_h": 25.75,
- "stj_d": 37.4
+ "stj_d": 37.4,
+ "annulus_rule": "half-maximum lumen edge (235 HU); where the edge meets calcium (>650 HU, within 2 mm) the contour is bridged smoothly as if no calcium were present (SCCT 2019)"
 }
