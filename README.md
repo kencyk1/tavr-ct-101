@@ -14,6 +14,8 @@ The page is a dark, reading-room style workstation that fits the screen it is on
 
 How CT works, Cardiac CT, Access check and the Quiz are ordinary scrolling pages.
 
+It installs as an app (Chrome, Edge, Android, or Share → Add to Home Screen on iPhone and iPad) from the install button in the top bar or the About panel. `sw.js` keeps the site network-first and saves each file it loads, so the scan and any case already opened work offline.
+
 Access check opens with an **access reconstruction**: a straightened view of each iliofemoral path on a centerline, a cross-section square to the vessel for measuring the minimal lumen, and a reference diameter profile against the sheath size (see `tools/access`).
 
 ## Sections

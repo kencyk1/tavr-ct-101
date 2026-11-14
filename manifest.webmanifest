@@ -1,0 +1,25 @@
+{
+  "id": "./",
+  "name": "TAVR CT 101",
+  "short_name": "TAVR CT 101",
+  "lang": "en",
+  "dir": "ltr",
+  "description": "Hands-on CT for structural heart APP training: scroll a real CTA with organ labels, practise MPR on gated TAVR planning CTs, measure the access vessels and size a virtual valve, including valve-in-valve.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#080C0F",
+  "theme_color": "#0F151A",
+  "categories": ["education", "medical"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "screenshots": [
+    { "src": "screens/wide.png", "sizes": "1280x800", "type": "image/png", "form_factor": "wide", "label": "The MPR lab on a gated TAVR CT with a virtual balloon-expandable valve" },
+    { "src": "screens/narrow.png", "sizes": "390x664", "type": "image/png", "form_factor": "narrow", "label": "Scrolling the CT angiogram on a phone" }
+  ]
+}

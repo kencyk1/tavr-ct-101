@@ -10,6 +10,7 @@
 <link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="canonical" href="https://ct.lubdubappguide.com/">
 <meta property="og:site_name" content="TAVR CT 101">
 <meta property="og:title" content="TAVR CT 101">
@@ -74,7 +75,11 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .iconbtn{flex:none;align-self:center;display:inline-grid;place-items:center;width:36px;height:36px;border-radius:50%;border:1px solid var(--line2);background:var(--raised);color:var(--muted);cursor:pointer;padding:0}
 .iconbtn:hover{color:var(--ink);border-color:var(--muted)}
 .iconbtn svg.i{width:18px;height:18px}
-#aboutBtn{margin-left:auto}
+.abtns{margin-left:auto;display:flex;gap:8px;align-items:center;flex:none}
+html:not(.can-install) [data-install]{display:none!important}
+.appbox{display:grid;gap:8px;border-top:1px solid var(--line);padding-top:14px;font-size:14px;color:var(--muted)}
+.appbox strong{color:var(--ink)}
+.appbox .btn{justify-self:start}
 @media (max-width:1279px){.brand small{display:none}.tabs .tl{display:none}.tabs .ts{display:inline}}
 @media (max-width:899px){.tabs a svg.i{display:none}.tabs a{padding:0 10px}}
 @media (max-width:719px){
@@ -407,6 +412,7 @@ dialog#about::backdrop{background:rgba(0,0,0,.65)}
   <symbol id="ic-left" viewBox="0 0 24 24"><path d="M14.5 6l-6 6 6 6"/></symbol>
   <symbol id="ic-right" viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6"/></symbol>
   <symbol id="ic-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.6"/><path d="M12 11v5.6M12 7.7v.2"/></symbol>
+  <symbol id="ic-install" viewBox="0 0 24 24"><path d="M12 4v10.5M7.5 10L12 14.5 16.5 10"/><path d="M5 15.5V19h14v-3.5"/></symbol>
   <symbol id="ic-close" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
 </svg>
 
@@ -420,7 +426,8 @@ dialog#about::backdrop{background:rgba(0,0,0,.65)}
     <a href="#access"><svg class="i"><use href="#ic-access"/></svg><span class="tl">Access check</span><span class="ts">Access</span></a>
     <a href="#quiz"><svg class="i"><use href="#ic-quiz"/></svg><span class="tl">Quiz</span><span class="ts">Quiz</span></a>
   </nav>
-  <button type="button" class="iconbtn" id="aboutBtn" aria-label="About TAVR CT 101 and data credits" title="About and credits"><svg class="i"><use href="#ic-info"/></svg></button>
+  <div class="abtns"><button type="button" class="iconbtn" data-install aria-label="Install TAVR CT 101 as an app" title="Install as an app"><svg class="i"><use href="#ic-install"/></svg></button>
+  <button type="button" class="iconbtn" id="aboutBtn" aria-label="About TAVR CT 101 and data credits" title="About and credits"><svg class="i"><use href="#ic-info"/></svg></button></div>
 </header>
 
 <main>
@@ -817,6 +824,12 @@ dialog#about::backdrop{background:rgba(0,0,0,.65)}
       <li>On a phone, the MPR lab shows one large pane. Tap a small pane to swap it in, and use <b>Slice − / +</b> to move through the large pane.</li>
       <li><b>How CT works</b>, <b>Cardiac CT</b>, <b>Access check</b> and the <b>Quiz</b> are reading pages with small interactive figures.</li>
     </ul>
+    <div class="appbox" id="appBox">
+      <span><strong>Use it as an app.</strong> Install TAVR CT 101 to open it from your home screen, dock or Start menu in its own window (in Chrome or Edge the browser menu also offers <i>Install</i> or <i>Add to Home screen</i>). Once the scan and a case have loaded on a device, they open without internet.</span>
+      <button class="btn primary" type="button" id="appInstall" hidden>Install app</button>
+      <span id="appIos" hidden>On iPhone or iPad: tap <b>Share</b>, then <b>Add to Home Screen</b>.</span>
+      <span id="appDone" hidden>You are using the installed app.</span>
+    </div>
     <div class="credits"></div>
   </div>
 </dialog>
@@ -1678,6 +1691,39 @@ goStop(5);setWin(200,700);readout();annulus();root();sfar();quiz();swatches();
 route();
 loadVolume();
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{redraw();peekSoon();});
+})();
+</script>
+<script>
+/* Installable app (ct.lubdubappguide.com and GitHub Pages only): save the site for offline use and offer Install where the
+   browser allows it. Chrome, Edge and Android hand over an install prompt; iPhone and iPad have none, so Install opens the steps.
+   Skipped inside a frame (for example a preview), where a service worker cannot be installed. */
+(function () {
+  var top_ = true; try { top_ = window.self === window.top; } catch (e) { top_ = false; }
+  var ok = top_ && 'serviceWorker' in navigator && (location.protocol === 'https:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname));
+  if (!ok) return;
+  var root = document.documentElement, deferred = null;
+  var standalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+  var ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(function () {}); });
+  function show() {
+    root.classList.toggle('can-install', !standalone && (!!deferred || ios));
+    var b = document.getElementById('appInstall'), h = document.getElementById('appIos'), d = document.getElementById('appDone');
+    if (b) b.hidden = standalone || !deferred;
+    if (h) h.hidden = standalone || !ios;
+    if (d) d.hidden = !standalone;
+  }
+  window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); deferred = e; show(); });
+  window.addEventListener('appinstalled', function () { deferred = null; standalone = true; show(); });
+  function install() {
+    if (deferred) { var p = deferred; deferred = null; p.prompt(); Promise.resolve(p.userChoice).then(show, show); show(); return; }
+    var a = document.getElementById('aboutBtn'); if (a) a.click();
+    setTimeout(function () { var box = document.getElementById('appBox'); if (box) box.scrollIntoView({ block: 'center' }); }, 80);
+  }
+  document.addEventListener('click', function (e) {
+    var t = e.target && e.target.closest && e.target.closest('[data-install], #appInstall'); if (!t) return;
+    e.preventDefault(); install();
+  });
+  show();
 })();
 </script>
 
