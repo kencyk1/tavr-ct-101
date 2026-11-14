@@ -77,6 +77,11 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .iconbtn svg.i{width:18px;height:18px}
 .abtns{margin-left:auto;display:flex;gap:8px;align-items:center;flex:none}
 html:not(.can-install) [data-install]{display:none!important}
+.topbtn{flex:none;display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 12px;border:1px solid var(--line2);border-radius:8px;background:var(--raised);color:var(--ink);font:600 13px/1 var(--f-body);cursor:pointer;white-space:nowrap}
+.topbtn svg.i{width:18px;height:18px}
+.topbtn:hover{border-color:var(--muted)}
+.topbtn[data-install]{border-color:var(--accent-line);color:var(--accent)}
+@media (max-width:899px){.topbtn{width:36px;padding:0;justify-content:center;border-radius:50%}.topbtn span{display:none}}
 .appbox{display:grid;gap:8px;border-top:1px solid var(--line);padding-top:14px;font-size:14px;color:var(--muted)}
 .appbox strong{color:var(--ink)}
 .appbox .btn{justify-self:start}
@@ -426,8 +431,8 @@ dialog#about::backdrop{background:rgba(0,0,0,.65)}
     <a href="#access"><svg class="i"><use href="#ic-access"/></svg><span class="tl">Access check</span><span class="ts">Access</span></a>
     <a href="#quiz"><svg class="i"><use href="#ic-quiz"/></svg><span class="tl">Quiz</span><span class="ts">Quiz</span></a>
   </nav>
-  <div class="abtns"><button type="button" class="iconbtn" data-install aria-label="Install TAVR CT 101 as an app" title="Install as an app"><svg class="i"><use href="#ic-install"/></svg></button>
-  <button type="button" class="iconbtn" id="aboutBtn" aria-label="About TAVR CT 101 and data credits" title="About and credits"><svg class="i"><use href="#ic-info"/></svg></button></div>
+  <div class="abtns"><button type="button" class="topbtn" data-install aria-label="Install TAVR CT 101 as an app" title="Install TAVR CT 101 on this device as an app"><svg class="i"><use href="#ic-install"/></svg><span>Install</span></button>
+  <button type="button" class="topbtn" id="aboutBtn" aria-label="About TAVR CT 101 and data credits" title="About, credits and data sources"><svg class="i"><use href="#ic-info"/></svg><span>About</span></button></div>
 </header>
 
 <main>
@@ -827,7 +832,7 @@ dialog#about::backdrop{background:rgba(0,0,0,.65)}
     <div class="appbox" id="appBox">
       <span><strong>Use it as an app.</strong> Install TAVR CT 101 to open it from your home screen, dock or Start menu in its own window (in Chrome or Edge the browser menu also offers <i>Install</i> or <i>Add to Home screen</i>). Once the scan and a case have loaded on a device, they open without internet.</span>
       <button class="btn primary" type="button" id="appInstall" hidden>Install app</button>
-      <span id="appIos" hidden>On iPhone or iPad: tap <b>Share</b>, then <b>Add to Home Screen</b>.</span>
+      <span id="appIos" hidden>On iPhone or iPad: tap <b>Share</b>, then <b>Add to Home Screen</b>. In Safari on a Mac: <b>File → Add to Dock</b>. In Chrome or Edge: the install icon in the address bar, or the browser menu → <b>Install</b>. Firefox does not install web apps; bookmark the page instead.</span>
       <span id="appDone" hidden>You are using the installed app.</span>
     </div>
     <div class="credits"></div>
@@ -1706,10 +1711,10 @@ if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{redraw();
   var ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(function () {}); });
   function show() {
-    root.classList.toggle('can-install', !standalone && (!!deferred || ios));
+    root.classList.toggle('can-install', !standalone);
     var b = document.getElementById('appInstall'), h = document.getElementById('appIos'), d = document.getElementById('appDone');
     if (b) b.hidden = standalone || !deferred;
-    if (h) h.hidden = standalone || !ios;
+    if (h) h.hidden = standalone || !!deferred;
     if (d) d.hidden = !standalone;
   }
   window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); deferred = e; show(); });

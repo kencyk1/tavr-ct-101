@@ -3,7 +3,7 @@
    as it would without this file. Each successful same-origin response is also saved on the device, so once the page
    and a case's images have loaded they open without internet. Each deploy changes VERSION, which refreshes the saved
    copy of the core files and removes old caches. */
-var VERSION = '5f4191aca508', CACHE = 'tavrct-site', FONTS = 'tavrct-fonts';
+var VERSION = 'd12258955b62', CACHE = 'tavrct-site', FONTS = 'tavrct-fonts';
 var ASSETS = ["./", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png", "icons/favicon.svg"];
 var PAGE = new URL('./', self.registration.scope).href;
 
