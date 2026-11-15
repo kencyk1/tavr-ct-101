@@ -542,7 +542,7 @@ dialog#about::backdrop{background:rgba(0,0,0,.65)}
       <button type="button" id="mZoomIn" aria-label="Zoom in">+</button>
     </div>
     <button type="button" class="btn" id="mReset">Square up planes</button>
-    <div class="seg" id="mTHV" aria-label="Virtual valve overlay" title="Overlay a schematic virtual transcatheter valve on the reference plane"><button type="button" data-thv="off" aria-pressed="true">No valve</button><button type="button" data-thv="bev" aria-pressed="false">BEV</button><button type="button" data-thv="sev" aria-pressed="false">SEV</button></div>
+    <div class="seg" id="mTHV" aria-label="Virtual valve overlay" title="Overlay a virtual transcatheter valve frame (SAPIEN 3-type BEV or Evolut-type SEV) on the reference plane"><button type="button" data-thv="off" aria-pressed="true">No valve</button><button type="button" data-thv="bev" aria-pressed="false">BEV</button><button type="button" data-thv="sev" aria-pressed="false">SEV</button></div>
     <label class="chk" for="mTHVSize">Size <select id="mTHVSize" disabled aria-label="Virtual valve size"></select></label>
     <label class="chk"><input type="checkbox" id="mLbl"> Color labels</label>
   </div>
@@ -1139,10 +1139,10 @@ const CASES={
   ref:{c:[70.62,61.61,68.98],n:V3.norm([0.7583,0.1112,0.6423])},
   truth:{max:21.6,min:21.3,area:361,per:67.5,LM:6.5,RCA:22.5,LM_r:21.6,RCA_r:20.0,frameD:23,postH:14.5},
   extraEx:[{t:'Measure the valve-to-coronary distance',steps:[
-   'Press <b>Show the reference plane</b>, then pick <b>BEV</b> or <b>SEV</b> above the panes (23 mm by default). The magenta outline is a schematic virtual valve frame: where the surgical leaflets would be pushed.',
+   'Press <b>Show the reference plane</b>, then pick <b>BEV</b> or <b>SEV</b> above the panes (23 mm by default). The magenta outline is a virtual valve frame built from published device dimensions: where the surgical leaflets would be pushed.',
    'Press <b>Go to the left main</b>. The axial pane moves up to the lower edge of the left main ostium.',
    'Choose <b>Measure</b> and drag in the <b>Axial</b> pane from the left main ostium (where it leaves the sinus) to the nearest point of the magenta circle. That length is the valve-to-coronary distance (VTC).',
-   'Switch to the other valve type and measure again: the self-expanding frame narrows at its waist, so its VTC differs. A VTC under about 4 mm signals a high risk of coronary obstruction.'],
+   'Switch to the other valve type and measure again: the two frames have different diameters at the height of the ostium, so the VTC differs. A VTC under about 4 mm signals a high risk of coronary obstruction.'],
    btns:[['auto','Show the reference plane'],['goLM','Go to the left main'],['revealVTC','Show the reference values']]}],
   labels:null,vol:null,lab:null,fbVol:null,fbLab:null,ready:false},
  cta:{key:'cta',name:'Body CTA · 1.5 mm',thvRec:{bev:26,sev:29},sh:SH,vs:VS,zoom:2,exact:false,
@@ -1225,15 +1225,37 @@ function w2s(id,p){const W=paneW(id),P=M.P[id],k=W/(FOVB/M.zoom),q=V3.add(p,P.vc
 function s2w(id,sx,sy){const W=paneW(id),P=M.P[id],k=W/(FOVB/M.zoom);return V3.add(V3.add(P.vc,P.u,(sx-W/2)/k),P.v,(sy-W/2)/k);}
 function paneLines(id){const P=M.P[id],n=nOf(id);return['A','B','C'].filter(q=>q!==id).map(q=>{const d=V3.cross(n,nOf(q)),dx=V3.dot(d,P.u),dy=V3.dot(d,P.v),l=Math.hypot(dx,dy)||1;return{q,dx:dx/l,dy:dy/l};});}
 function anat(v){const a=v.map(Math.abs),i=a.indexOf(Math.max(a[0],a[1],a[2]));return i===0?(v[0]>0?'L':'R'):i===1?(v[1]>0?'P':'A'):(v[2]>0?'I':'S');}
-/* Virtual transcatheter valve overlay (schematic outlines, not a specific product). Heights are along the valve axis from the
-   reference (annulus / sewing-ring inflow) plane toward the aorta; each knot is [height mm, frame diameter mm]. */
+/* Virtual transcatheter valve overlay. Heights run along the valve axis from the reference plane (annulus, or the sewing-ring
+   inflow in valve-in-valve) toward the aorta; each knot is [height mm, frame outer diameter mm]. Teaching approximation, not a
+   device model: follow the current IFU and a dedicated planning tool for real cases.
+   BEV = SAPIEN 3 / Ultra: short cylinder at nominal diameter; frame heights from the Edwards IFU (15.5/18/20/22.5 mm).
+     Implant depth: conventional deployment ends about 80:20 to 90:10 aortic:ventricular (expert consensus); drawn at 80:20 native,
+     90:10 valve-in-valve.
+   SEV = Evolut R / PRO / PRO+ / FX: inflow = label size, frame 45 mm tall (46 mm for 34), sealing skirt 13 mm (14 mm for 29/34),
+     waist 22/22/23/24 mm (23/26/29/34) and commissure posts at 26 mm (JACC Cardiovasc Interv 2022;15:434; Ann Cardiothorac Surg
+     2020;9:452). Outflow: 34 mm for the 23 mm valve (EuroIntervention bench study); 32-38 mm reported across sizes, so the
+     26/29/34 mm outflows are approximate. Implant depth 3 mm below the plane (IFU target 3-5 mm).
+     In a native annulus the nitinol inflow conforms to the annulus, so it is drawn at the perimeter-derived diameter when that
+     is smaller than the label size (Evolut is oversized by design). In valve-in-valve both frames are capped at the surgical
+     frame's CT diameter up to the post tips, then allowed to open gradually above them. */
 /* Sizing charts: BEV by CT annulus area (SAPIEN 3 IFU), SEV by annulus perimeter (Evolut PRO+ IFU). Teaching only: follow the current IFU. */
 const BEV_AREA={20:[273,345],23:[338,430],26:[430,546],29:[540,683]},BEV_H={20:15.5,23:18,26:20,29:22.5};
 const SEV_PER={23:[56.5,62.8],26:[62.8,72.3],29:[72.3,81.7],34:[81.7,94.2]};
+const SEV_DIM={23:{H:45,skirt:13,waist:22,out:34},26:{H:45,skirt:13,waist:22,out:35,ap:1},29:{H:45,skirt:14,waist:23,out:37,ap:1},34:{H:46,skirt:14,waist:24,out:38,ap:1}};
 const THV_SIZES={bev:[20,23,26,29],sev:[23,26,29,34]};
-function thvG(type,size,viv){if(type==='bev'){const H=BEV_H[size],d=+((viv?.1:.2)*H).toFixed(1);
-  return{type,size,n:'BEV '+size,long:`balloon-expandable, ${size} mm cylinder, ${H} mm tall, inflow ${d} mm below the plane (${viv?'about 10%':'about 20%'} ventricular)`,k:[[-d,size],[H-d,size]]};}
- const D=3,w=size-4,o=size+6;return{type,size,n:'SEV '+size,long:`self-expanding (schematic), ${size} mm inflow, about ${w} mm waist, ${o} mm outflow, 45 mm tall, inflow ${D} mm below the plane`,k:[[-D,size],[-D+6,size],[-D+13,w],[-D+22,w],[-D+32,o],[-D+45,o]]};}
+function thvG(type,size,viv,cs){cs=cs||M.cs;const t=cs&&cs.exact?cs.truth:null,cap=[];
+ if(viv&&t&&t.frameD&&t.postH)cap.push(h=>t.frameD+Math.max(0,h-t.postH));
+ let G,D,H,prof;
+ if(type==='bev'){H=BEV_H[size];D=+((viv?.1:.2)*H).toFixed(1);prof=()=>size;
+  G={type,size,n:'BEV '+size,long:`SAPIEN 3-type balloon-expandable frame, ${size} mm, ${H} mm tall, ${viv?'90:10':'80:20'} (inflow ${D} mm below the plane)`};}
+ else{const S=SEV_DIM[size];H=S.H;D=3;const mid=(size+S.waist)/2;
+  prof=z=>z<=6?size:z<=S.skirt?size+(mid-size)*(z-6)/(S.skirt-6):z<=20?mid+(S.waist-mid)*(z-S.skirt)/(20-S.skirt):z<=30?S.waist:z<=H-4?S.waist+(S.out-S.waist)*(z-30)/(H-34):S.out;
+  if(!viv&&t&&t.per){const Dp=t.per/Math.PI;if(Dp<size)cap.push(h=>Dp+Math.max(0,h-2)*.8);}
+  G={type,size,n:'SEV '+size,long:`Evolut-type self-expanding frame, ${size} mm inflow, ${S.waist} mm waist, ${S.ap?'≈':''}${S.out} mm outflow, ${H} mm tall, inflow ${D} mm below the plane`};}
+ const k=[];for(let z=0;z<=H+1e-6;z+=0.5){const h=z-D;let d=prof(z);cap.forEach(c=>{d=Math.min(d,c(h));});k.push([+h.toFixed(2),+d.toFixed(2)]);}
+ G.k=k;G.conf=cap.length>0&&k.some(q=>Math.abs(q[1]-prof(q[0]+D))>.05);
+ if(G.conf)G.long+=viv?`; capped at the surgical frame's ${t.frameD} mm up to the ${t.postH} mm post tips`:`; inflow drawn at ${fmt(t.per/Math.PI)} mm, the perimeter-derived annulus diameter, because the oversized nitinol inflow conforms to the annulus`;
+ return G;}
 function curTHV(){return M.thv&&M.thv!=='off'?thvG(M.thv,M.thvSize||(M.cs.thvRec||{})[M.thv]||23,!!M.cs.viv):null;}
 function thvR(g,h){const k=g.k;if(h<k[0][0]-1e-6||h>k[k.length-1][0]+1e-6)return null;for(let i=1;i<k.length;i++)if(h<=k[i][0]+1e-9){const t=(h-k[i-1][0])/((k[i][0]-k[i-1][0])||1);return(k[i-1][1]+(k[i][1]-k[i-1][1])*t)/2;}return k[k.length-1][1]/2;}
 function thvFit(type,v){const T=type==='bev'?BEV_AREA:SEV_PER;return Object.keys(T).map(Number).filter(z=>v>=T[z][0]&&v<=T[z][1]);}
@@ -1362,6 +1384,7 @@ function exFeedback(){const el=$('#exFb');if(!el||!M.E)return;const cs=M.cs,e3=M
   if(M.marks.reveal)h+=`<span class="chip neutral">Reference: left main ${cs.truth.LM} mm, RCA ${cs.truth.RCA} mm (lower edge of each ostium)</span>`;
   if(M.marks.reveal&&cs.truth.postH!==undefined)h+=`<span class="chip neutral">The stent posts reach ${cs.truth.postH} mm: the left main sits below their tips, the RCA above them. Measure the valve-to-coronary distance in the next exercise.</span>`;}
  else{const V=cs.vessel[M.vessel],a=deg(Math.acos(Math.min(1,Math.abs(V3.dot(e3,V.d))))),str=(1/Math.cos(a*Math.PI/180)-1)*100;h=`<span class="chip ${a<8?'good':a<20?'warn':'bad'}">Axial plane ${a.toFixed(0)}° from perpendicular to the ${V.n}</span><span class="chip neutral">Lumen stretched up to ${str<1?'<1':str.toFixed(0)}% along one axis</span>`;}
+ {const G=curTHV();if(G&&ex!=='Measure the valve-to-coronary distance')h+=`<span class="chip neutral">Virtual ${G.n}: ${G.long}. Teaching approximation; check the IFU.</span>`;}
  el.innerHTML=h;}
 
 /* readout */
