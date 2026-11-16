@@ -544,6 +544,7 @@ dialog#about::backdrop{background:rgba(0,0,0,.65)}
     <button type="button" class="btn" id="mReset">Square up planes</button>
     <div class="seg" id="mTHV" aria-label="Virtual valve overlay" title="Overlay a virtual transcatheter valve frame (SAPIEN 3-type BEV or Evolut-type SEV) on the reference plane"><button type="button" data-thv="off" aria-pressed="true">No valve</button><button type="button" data-thv="bev" aria-pressed="false">BEV</button><button type="button" data-thv="sev" aria-pressed="false">SEV</button></div>
     <label class="chk" for="mTHVSize">Size <select id="mTHVSize" disabled aria-label="Virtual valve size"></select></label>
+    <label class="chk" for="mTHVDepth" title="Implant depth: BEV as aortic:ventricular frame ratio, SEV as mm of inflow below the annulus">Depth <select id="mTHVDepth" disabled aria-label="Virtual valve implant depth"></select></label>
     <label class="chk"><input type="checkbox" id="mLbl"> Color labels</label>
   </div>
   <div class="stage">
@@ -1152,7 +1153,7 @@ const CASES={
 };
 CASES.root2.labels=CASES.root.labels;
 CASES.root3.labels=Object.assign({},CASES.root.labels,{3:{n:'Bioprosthetic leaflets',c:[250,225,80]},5:{n:'Sewing-ring (inflow) plane',c:[80,210,230]},10:{n:'Prosthesis frame (metal) or calcium',c:[255,255,255]}});
-const M={thv:'off',thvSize:null,cs:CASES.root,c:CASES.root.ref.c.slice(),E:null,P:{},zoom:2.6,wl:250,ww:900,slab:0,labels:false,tool:'nav',drag:null,meas:[],last:null,probe:null,ex:0,checked:false,showRef:false,vessel:'R',ready:false,marks:{}};
+const M={thv:'off',thvSize:null,thvDepth:{bev:null,sev:null},cs:CASES.root,c:CASES.root.ref.c.slice(),E:null,P:{},zoom:2.6,wl:250,ww:900,slab:0,labels:false,tool:'nav',drag:null,meas:[],last:null,probe:null,ex:0,checked:false,showRef:false,vessel:'R',ready:false,marks:{}};
 let MV=null,ML=null,MSH=[1,1,1],MVS=1,MPL=1;
 function useCase(cs){MV=cs.vol;ML=cs.lab;MSH=cs.sh;MVS=cs.vs;MPL=MSH[1]*MSH[2];}
 const EX_COMMON=[
@@ -1243,24 +1244,30 @@ const BEV_AREA={20:[273,345],23:[338,430],26:[430,546],29:[540,683]},BEV_H={20:1
 const SEV_PER={23:[56.5,62.8],26:[62.8,72.3],29:[72.3,81.7],34:[81.7,94.2]};
 const SEV_DIM={23:{H:45,skirt:13,waist:22,out:34},26:{H:45,skirt:13,waist:22,out:35,ap:1},29:{H:45,skirt:14,waist:23,out:37,ap:1},34:{H:46,skirt:14,waist:24,out:38,ap:1}};
 const THV_SIZES={bev:[20,23,26,29],sev:[23,26,29,34]};
-function thvG(type,size,viv,cs){cs=cs||M.cs;const t=cs&&cs.exact?cs.truth:null,cap=[];
+/* Implant-depth choices. BEV: ventricular fraction of frame height (0.1 = 90:10). SEV: mm of inflow below the plane (IFU target 3-5 mm). */
+const THV_DEPTHS={bev:[.1,.2,.3],sev:[1,2,3,4,5,6]};
+const thvDepthDef=(type,viv)=>type==='bev'?(viv?.1:.2):3;
+const thvDepthTxt=(type,v)=>type==='bev'?`${Math.round(100-100*v)}:${Math.round(100*v)}`:`${v} mm`;
+function thvG(type,size,viv,cs,dep){cs=cs||M.cs;if(dep==null)dep=thvDepthDef(type,viv);const t=cs&&cs.exact?cs.truth:null,cap=[];
  if(viv&&t&&t.frameD&&t.postH)cap.push(h=>t.frameD+Math.max(0,h-t.postH));
  let G,D,H,prof;
- if(type==='bev'){H=BEV_H[size];D=+((viv?.1:.2)*H).toFixed(1);prof=()=>size;
-  G={type,size,n:'BEV '+size,long:`SAPIEN 3-type balloon-expandable frame, ${size} mm, ${H} mm tall, ${viv?'90:10':'80:20'} (inflow ${D} mm below the plane)`};}
- else{const S=SEV_DIM[size];H=S.H;D=3;const mid=(size+S.waist)/2;
+ if(type==='bev'){H=BEV_H[size];D=+(dep*H).toFixed(1);prof=()=>size;
+  G={type,size,dep,n:'BEV '+size,long:`SAPIEN 3-type balloon-expandable frame, ${size} mm, ${H} mm tall, ${thvDepthTxt('bev',dep)} (inflow ${fmt(D)} mm below the plane, outflow ${fmt(H-D)} mm above it)`};}
+ else{const S=SEV_DIM[size];H=S.H;D=dep;const mid=(size+S.waist)/2;
   prof=z=>z<=6?size:z<=S.skirt?size+(mid-size)*(z-6)/(S.skirt-6):z<=20?mid+(S.waist-mid)*(z-S.skirt)/(20-S.skirt):z<=30?S.waist:z<=H-4?S.waist+(S.out-S.waist)*(z-30)/(H-34):S.out;
   if(!viv&&t&&t.per){const Dp=t.per/Math.PI;if(Dp<size)cap.push(h=>Dp+Math.max(0,h-2)*.8);}
-  G={type,size,n:'SEV '+size,long:`Evolut-type self-expanding frame, ${size} mm inflow, ${S.waist} mm waist, ${S.ap?'≈':''}${S.out} mm outflow, ${H} mm tall, inflow ${D} mm below the plane`};}
+  G={type,size,dep,n:'SEV '+size,long:`Evolut-type self-expanding frame, ${size} mm inflow, ${S.waist} mm waist, ${S.ap?'≈':''}${S.out} mm outflow, ${H} mm tall, inflow ${D} mm below the plane${D<3||D>5?' (outside the 3–5 mm IFU target)':''}, skirt top ${S.skirt-D} mm and commissures ${26-D} mm above it`};}
  const k=[];for(let z=0;z<=H+1e-6;z+=0.5){const h=z-D;let d=prof(z);cap.forEach(c=>{d=Math.min(d,c(h));});k.push([+h.toFixed(2),+d.toFixed(2)]);}
  G.k=k;G.conf=cap.length>0&&k.some(q=>Math.abs(q[1]-prof(q[0]+D))>.05);
  if(G.conf)G.long+=viv?`; capped at the surgical frame's ${t.frameD} mm up to the ${t.postH} mm post tips`:`; inflow drawn at ${fmt(t.per/Math.PI)} mm, the perimeter-derived annulus diameter, because the oversized nitinol inflow conforms to the annulus`;
  return G;}
-function curTHV(){return M.thv&&M.thv!=='off'?thvG(M.thv,M.thvSize||(M.cs.thvRec||{})[M.thv]||23,!!M.cs.viv):null;}
+function curTHV(){return M.thv&&M.thv!=='off'?thvG(M.thv,M.thvSize||(M.cs.thvRec||{})[M.thv]||23,!!M.cs.viv,M.cs,M.thvDepth[M.thv]):null;}
 function thvR(g,h){const k=g.k;if(h<k[0][0]-1e-6||h>k[k.length-1][0]+1e-6)return null;for(let i=1;i<k.length;i++)if(h<=k[i][0]+1e-9){const t=(h-k[i-1][0])/((k[i][0]-k[i-1][0])||1);return(k[i-1][1]+(k[i][1]-k[i-1][1])*t)/2;}return k[k.length-1][1]/2;}
 function thvFit(type,v){const T=type==='bev'?BEV_AREA:SEV_PER;return Object.keys(T).map(Number).filter(z=>v>=T[z][0]&&v<=T[z][1]);}
-function thvUI(){$$('#mTHV button').forEach(q=>q.setAttribute('aria-pressed',String(q.dataset.thv===M.thv)));const sel=$('#mTHVSize');
- if(M.thv==='off'){sel.disabled=true;sel.innerHTML='<option>—</option>';return;}
+function thvUI(){$$('#mTHV button').forEach(q=>q.setAttribute('aria-pressed',String(q.dataset.thv===M.thv)));const sel=$('#mTHVSize'),ds=$('#mTHVDepth');
+ if(M.thv==='off'){sel.disabled=true;sel.innerHTML='<option>—</option>';ds.disabled=true;ds.innerHTML='<option>—</option>';return;}
+ {const viv=!!M.cs.viv,def=thvDepthDef(M.thv,viv),cur=M.thvDepth[M.thv]==null?def:M.thvDepth[M.thv];ds.disabled=false;
+  ds.innerHTML=THV_DEPTHS[M.thv].map(v=>`<option value="${v}"${v===cur?' selected':''}>${thvDepthTxt(M.thv,v)}${v===def?' · default':M.thv==='sev'&&v>=3&&v<=5?' · IFU range':''}</option>`).join('');}
  const cs=M.cs,rec=(cs.thvRec||{})[M.thv],fit=cs.exact&&!cs.viv&&cs.truth?thvFit(M.thv,M.thv==='bev'?cs.truth.area:cs.truth.per):[rec];sel.disabled=false;
  sel.innerHTML=THV_SIZES[M.thv].map(z=>`<option value="${z}"${z===M.thvSize?' selected':''}>${z} mm${fit.includes(z)?(cs.viv?' · default':' · fits'):''}</option>`).join('');}
 function setTHV(type,size){M.thv=type;if(type!=='off')M.thvSize=size||(M.cs.thvRec||{})[type]||23;thvUI();mprReq(true);exFeedback();}
@@ -1338,7 +1345,7 @@ async function loadRootCase(key){const cs=CASES[key],[Z,Y,X]=cs.sh,PL_=Y*X;cs.vo
   const rr=rng(4242);for(let i=0;i<cs.vol.length;i+=2){const u=rr()||1e-9,w=rr(),m=Math.sqrt(-2*Math.log(u))*0;cs.vol[i]+=Math.round(m*Math.cos(6.2832*w));if(i+1<cs.vol.length)cs.vol[i+1]+=Math.round(m*Math.sin(6.2832*w));}
   mprReady(key);}
  catch(e){cs.loading=false;cs.vol=null;if(M.cs.key===key)$('#mprLoadMsg').textContent='Could not load '+cs.name+' ('+e.message+'). Reload the page to try again.';}}
-function switchCase(key){const cs=CASES[key];M.cs=cs;if(M.thv!=='off')M.thvSize=(cs.thvRec||{})[M.thv]||M.thvSize;thvUI();{const pr=MPRE[cs.win||'cardiac'];mSetWin(pr.l,pr.w);}cs.lab=key==='cta'?LAB:cs.lab;if(cs.files&&!cs.loading&&!cs.ready){cs.loading=true;loadRootCase(key);}$('#mCaseSel').value=key;
+function switchCase(key){const cs=CASES[key];M.cs=cs;M.thvDepth={bev:null,sev:null};if(M.thv!=='off')M.thvSize=(cs.thvRec||{})[M.thv]||M.thvSize;thvUI();{const pr=MPRE[cs.win||'cardiac'];mSetWin(pr.l,pr.w);}cs.lab=key==='cta'?LAB:cs.lab;if(cs.files&&!cs.loading&&!cs.ready){cs.loading=true;loadRootCase(key);}$('#mCaseSel').value=key;
  M.meas=[];M.last=null;M.checked=false;M.marks={};M.ex=Math.min(M.ex,EXS().length-1);
  $('#exList').innerHTML=EXS().map((e,i)=>`<li><button type="button"><span class="n">${String(i+1).padStart(2,'0')}</span><span>${e.t}</span></button></li>`).join('');
  $$('#exList button').forEach((b,i)=>b.addEventListener('click',()=>{M.ex=i;exCard();}));
@@ -1378,13 +1385,14 @@ function exFeedback(){const el=$('#exFb');if(!el||!M.E)return;const cs=M.cs,e3=M
   h=!G?'<span class="chip warn">Pick BEV or SEV above the panes to show a virtual valve</span>':`<span class="chip neutral">Virtual ${G.n}: ${G.long}</span>`;
   h+=`<span class="chip ${ang<3?'good':'warn'}">Axial pane ${ang<3?'parallel to':ang.toFixed(1)+'° off'} the reference plane · ${off>=0?off.toFixed(1)+' mm above':Math.abs(off).toFixed(1)+' mm below'} it</span>`;
   if(M.last&&G){const len=Math.hypot(...V3.add(M.last.b,M.last.a,-1)),d=len-vt(G);h+=`<span class="chip ${Math.abs(d)<1?'good':Math.abs(d)<2?'warn':'bad'}">Your line ${fmt(len)} mm vs reference VTC ${fmt(vt(G))} mm to the left main (${G.n})</span>`;}
-  if(M.marks.vtc){const gb=thvG('bev',rec.bev,!!cs.viv),gs=thvG('sev',rec.sev,!!cs.viv);h+=`<span class="chip neutral">Reference, left main (ostium ${t.LM} mm up, ${t.LM_r} mm from the valve axis): VTC ${fmt(vt(gb))} mm with ${gb.n}, ${fmt(vt(gs))} mm with ${gs.n}. The RCA arises at ${t.RCA} mm, above the ${t.postH} mm stent posts, so displaced leaflets cannot reach it.</span>`;}}
+  if(M.marks.vtc){const gb=thvG('bev',rec.bev,!!cs.viv,cs,M.thvDepth.bev),gs=thvG('sev',rec.sev,!!cs.viv,cs,M.thvDepth.sev);h+=`<span class="chip neutral">Reference, left main (ostium ${t.LM} mm up, ${t.LM_r} mm from the valve axis): VTC ${fmt(vt(gb))} mm with ${gb.n} at ${thvDepthTxt('bev',gb.dep)}, ${fmt(vt(gs))} mm with ${gs.n} at ${thvDepthTxt('sev',gs.dep)}. The RCA arises at ${t.RCA} mm, above the ${t.postH} mm stent posts, so displaced leaflets cannot reach it.</span>`;}}
  else if(ex==='Measure coronary heights'){h=`<span class="chip ${ang<3?'good':'warn'}">Axial pane ${ang<3?'parallel to':ang.toFixed(1)+'° off'} the annulus · ${off>=0?off.toFixed(1)+' mm above':Math.abs(off).toFixed(1)+' mm below'} it</span>`;
   ['LM','RCA'].forEach(k=>{if(M.marks[k]!==undefined){const d=M.marks[k]-cs.truth[k];h+=`<span class="chip ${Math.abs(d)<1?'good':Math.abs(d)<2?'warn':'bad'}">${k==='LM'?'Left main':'RCA'} marked at ${fmt(M.marks[k])} mm${M.marks.reveal?` · reference ${fmt(cs.truth[k])} mm`:''}</span>`;}});
   if(M.marks.reveal)h+=`<span class="chip neutral">Reference: left main ${cs.truth.LM} mm, RCA ${cs.truth.RCA} mm (lower edge of each ostium)</span>`;
   if(M.marks.reveal&&cs.truth.postH!==undefined)h+=`<span class="chip neutral">The stent posts reach ${cs.truth.postH} mm: the left main sits below their tips, the RCA above them. Measure the valve-to-coronary distance in the next exercise.</span>`;}
  else{const V=cs.vessel[M.vessel],a=deg(Math.acos(Math.min(1,Math.abs(V3.dot(e3,V.d))))),str=(1/Math.cos(a*Math.PI/180)-1)*100;h=`<span class="chip ${a<8?'good':a<20?'warn':'bad'}">Axial plane ${a.toFixed(0)}° from perpendicular to the ${V.n}</span><span class="chip neutral">Lumen stretched up to ${str<1?'<1':str.toFixed(0)}% along one axis</span>`;}
- {const G=curTHV();if(G&&ex!=='Measure the valve-to-coronary distance')h+=`<span class="chip neutral">Virtual ${G.n}: ${G.long}. Teaching approximation; check the IFU.</span>`;}
+ {const G=curTHV();if(G&&ex!=='Measure the valve-to-coronary distance'){h+=`<span class="chip neutral">Virtual ${G.n}: ${G.long}. Teaching approximation; check the IFU.</span>`;
+  const t=cs.exact?cs.truth:null;if(G.type==='bev'&&t&&t.LM!=null){const top=G.k[G.k.length-1][0],lo=Math.min(t.LM,t.RCA);h+=`<span class="chip ${top<lo?'good':'warn'}">BEV outflow ${fmt(top)} mm above the plane vs left main ${t.LM} mm and RCA ${t.RCA} mm: ${top<lo?'below both ostia':'above the '+(t.LM<=t.RCA?'left main':'RCA')+' ostium'}. A higher implant pins the native leaflets taller, which matters for coronary access and a future TAV-in-TAV.</span>`;}}}
  el.innerHTML=h;}
 
 /* readout */
@@ -1434,6 +1442,7 @@ $('#mReset').onclick=()=>{if(!M.ready)return;setFrame(frameFrom([0,0,1]),M.c,M.z
 $('#mLbl').addEventListener('change',e=>{M.labels=e.target.checked;mprReq(true);});
 $$('#mTHV button').forEach(b=>b.addEventListener('click',()=>setTHV(b.dataset.thv)));
 $('#mTHVSize').addEventListener('change',e=>setTHV(M.thv,+e.target.value));
+$('#mTHVDepth').addEventListener('change',e=>{if(M.thv==='off')return;M.thvDepth[M.thv]=+e.target.value;thvUI();mprReq(true);exFeedback();});
 $('#mSlab').addEventListener('input',e=>{M.slab=+e.target.value;$('#mSlabO').textContent=M.slab?M.slab+' mm':'Off';mprReq(true);});
 $('#mCaseSel').addEventListener('change',e=>switchCase(e.target.value));
 switchCase('root');
